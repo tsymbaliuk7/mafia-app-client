@@ -14,41 +14,59 @@ class VideoView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 5),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.25),
-            borderRadius: BorderRadius.circular(25)
-          ),
-          child: !webrtcController.webrtcClients[peer]!.isMutedVideo.value 
-          ? RTCVideoView(
-              webrtcController.webrtcClients[peer]!.videoRenderer!,
-              mirror: peer == webrtcController.localClient,
-          )
-          : Center(
-            child: Container(
-              width: 100,
-              height: 100,
+        return Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: const Color.fromARGB(255, 243, 214, 128),
-                  width: 1
-                ),
-                color: const Color.fromARGB(255, 255, 239, 193)
+                color: Colors.black.withOpacity(0.25),
+                borderRadius: BorderRadius.circular(25)
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    peer[0].toUpperCase(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.black.withOpacity(0.7), fontSize: 40),
+              child: !webrtcController.webrtcClients[peer]!.isMutedVideo.value 
+              ? RTCVideoView(
+                  webrtcController.webrtcClients[peer]!.videoRenderer!,
+                  mirror: peer == webrtcController.localClient,
+              )
+              : Center(
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color.fromARGB(255, 243, 214, 128),
+                      width: 1
+                    ),
+                    color: const Color.fromARGB(255, 255, 239, 193)
                   ),
-                ],
-              ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        peer[0].toUpperCase(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.black.withOpacity(0.7), fontSize: 40),
+                      ),
+                    ],
+                  ),
+                ),
+              )
             ),
-          )
+            webrtcController.webrtcClients[peer]!.isMutedAudio.value ? Positioned(
+              right: 5,
+              bottom: 20,
+              child: Container(
+                color: Colors.black.withOpacity(0.4),
+                padding: const EdgeInsets.all(2),
+                child: Icon(
+                  Icons.mic_off_outlined,
+                  size: 20,
+                  color: Colors.white.withOpacity(0.8),
+                ),
+              )
+            )
+            : const SizedBox()
+          ],
         );
       }
     );

@@ -275,7 +275,6 @@ class WebRTCController extends GetxController{
       
       }
 
-
       webrtcClients.value = {};
       SocketService().socket.emit('leave', {'roomID': room});
     }
