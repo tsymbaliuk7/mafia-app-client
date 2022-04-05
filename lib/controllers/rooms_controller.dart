@@ -29,7 +29,6 @@ class RoomsController extends GetxController{
       roomStatus.value = Status.success;
     }
     catch(_){
-      print(_);
       roomList.value = [];
       roomStatus.value = Status.failure;
     }
