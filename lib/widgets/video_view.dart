@@ -56,12 +56,16 @@ class VideoView extends StatelessWidget {
               right: 5,
               bottom: 20,
               child: Container(
-                color: Colors.black.withOpacity(0.4),
-                padding: const EdgeInsets.all(2),
+                
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.3),
+                  borderRadius: const BorderRadius.all(Radius.circular(40)),
+                ),
+                padding: const EdgeInsets.all(5),
                 child: Icon(
                   Icons.mic_off_outlined,
                   size: 20,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withOpacity(0.6),
                 ),
               )
             )

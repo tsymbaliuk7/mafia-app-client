@@ -1,8 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart';
 import 'package:mafiaclient/controllers/rooms_controller.dart';
 import 'package:mafiaclient/models/webrtc_user.dart';
+import 'package:typed_data/typed_data.dart';
 
 import '../globals.dart';
 import '../network/socket_service.dart';
@@ -14,7 +17,6 @@ class WebRTCController extends GetxController{
   var status = Status.initial.obs;
   var webrtcClients = <String, WebRTCUser>{}.obs;
   
-
   @override
   void onInit() {
     status.value = Status.loading;
@@ -64,6 +66,12 @@ class WebRTCController extends GetxController{
     update();
   }
 
+  Future<Uint8List> _getFrameByteData() async{
+    var track = webrtcClients[localClient]!.videoRenderer!.srcObject!.getVideoTracks()[0];
+    var byteBuffer = await track.captureFrame();
+    return byteBuffer.asUint8List();
+  }
+
 
   void startCapturing(String id) async {
     
@@ -81,10 +89,8 @@ class WebRTCController extends GetxController{
         webrtcClients[localClient]!.videoRenderer!.srcObject = await webrtc.navigator.mediaDevices.getUserMedia(constraints);
 
         webrtcClients[localClient]!.isReadyToDisplay.value = true;
-        update();
 
         status.value = Status.success;
-
         SocketService().socket.emit('join', {'room': room});
 
       }
@@ -123,21 +129,21 @@ class WebRTCController extends GetxController{
 
 
   void registerPeerConnectionListeners(String name) {
-    webrtcClients[name]?.connection?.onIceGatheringState = (RTCIceGatheringState state) {
-      print('ICE gathering state changed: $state');
-    };
+    // webrtcClients[name]?.connection?.onIceGatheringState = (RTCIceGatheringState state) {
+    //   print('ICE gathering state changed: $state');
+    // };
 
-    webrtcClients[name]?.connection?.onConnectionState = (RTCPeerConnectionState state) {
-      print('Connection state change: $state');
-    };
+    // webrtcClients[name]?.connection?.onConnectionState = (RTCPeerConnectionState state) {
+    //   print('Connection state change: $state');
+    // };
 
-    webrtcClients[name]?.connection?.onSignalingState = (RTCSignalingState state) {
-      print('Signaling state change: $state');
-    };
+    // webrtcClients[name]?.connection?.onSignalingState = (RTCSignalingState state) {
+    //   print('Signaling state change: $state');
+    // };
 
-    webrtcClients[name]?.connection?.onIceGatheringState = (RTCIceGatheringState state) {
-      print('ICE connection state change: $state');
-    };
+    // webrtcClients[name]?.connection?.onIceGatheringState = (RTCIceGatheringState state) {
+    //   print('ICE connection state change: $state');
+    // };
 
     webrtcClients[name]?.connection?.onAddStream = (MediaStream stream) {
       
@@ -163,7 +169,6 @@ class WebRTCController extends GetxController{
 
       webrtcClients[peerId] = WebRTCUser(peerId: peerId);
       
-      // ImageCapture(track)
       webrtcClients[peerId]!.connection = await createPeerConnection(configuration);
 
       registerPeerConnectionListeners(peerId);
@@ -189,7 +194,6 @@ class WebRTCController extends GetxController{
 
       webrtcClients[peerId]!.connection!.onTrack = (RTCTrackEvent trackEvent) {
           trackEvent.streams[0].getTracks().forEach((track) {
-            print(track);
             webrtcClients[peerId]!.videoRenderer!.srcObject!.addTrack(track);
           });
         };
