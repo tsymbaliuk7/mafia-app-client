@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:mafiaclient/controllers/auth_controller.dart';
 import 'package:mafiaclient/views/home_page.dart';
+import 'package:mafiaclient/views/start_page.dart';
 
 void main() async {
   await GetStorage.init();
@@ -18,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomePage(),
+      home: StartPage(),
     );
   }
 }

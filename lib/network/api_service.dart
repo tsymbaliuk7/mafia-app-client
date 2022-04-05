@@ -51,7 +51,7 @@ class ApiService{
     return GetStorage().read('token') != null;
   }
 
-  void readToken() async {
+  Future<void> readToken() async {
     var token = GetStorage().read('token');
     this.token = token;
   }

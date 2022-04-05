@@ -1,3 +1,8 @@
+import 'package:dio/dio.dart';
+import 'package:mafiaclient/network/api_service.dart';
+
+import '../models/user_model.dart';
+
 class ApiRepository{
 
   static ApiRepository? _instance;
@@ -16,9 +21,18 @@ class ApiRepository{
     
   // }
 
-  // Future<UserModel> getMyUser(Map<String, dynamic> data) async{
-    
-  // }
+  Future<UserModel> getMyUser() async{
+    String endpoint = 'user';
+    final  api = ApiService().getApiWithOptions(withAuth: true);
+    final response = await api.get(endpoint);
+    if(response.statusCode == 200){
+      Map<String, dynamic> data = Map<String, dynamic>.from(response.data);
+      return UserModel.fromJson(data);
+    }
+    else{
+      throw Exception('Failed to load user');
+    }
+  }
 
   // Future<UserModel> UpdateMyUser(Map<String, dynamic> data) async{
     

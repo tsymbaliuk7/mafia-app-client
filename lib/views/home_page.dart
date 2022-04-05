@@ -7,7 +7,7 @@ import '../controllers/rooms_controller.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
-
+  
   final RoomsController roomsController = Get.put(RoomsController());
 
   @override
