@@ -205,22 +205,6 @@ class _SignInPageState extends State<SignInPage> {
                               },
                             ),
                           ),
-                          // Padding(
-                          //   padding: const EdgeInsets.only(bottom: 42),
-                          //   child: Center(
-                          //     child: RichText(
-                          //         text: TextSpan(
-                          //       text: 'Forgot password? ',
-                          //       recognizer: TapGestureRecognizer()..onTap = () => {},
-                          //       style: const TextStyle(
-                          //         fontSize: 14,
-                          //         fontWeight: FontWeight.w600,
-                          //         color: Color(0xff2B2B2B),
-                          //         letterSpacing: 0.7,
-                          //       ),
-                          //     )),
-                          //   ),
-                          // ),
                           Center(
                             child: RichText(
                               text: TextSpan(
@@ -242,7 +226,7 @@ class _SignInPageState extends State<SignInPage> {
                                     ),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
-                                      
+                                        widget.authController.goToSignIn();
                                       },
                                   ),
                                 ],

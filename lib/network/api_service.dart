@@ -56,7 +56,7 @@ class ApiService{
     this.token = token;
   }
 
-  void deleteToken() async {
+  Future<void> deleteToken() async {
     await GetStorage().remove('token');
     token = null;
   }

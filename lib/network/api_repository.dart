@@ -81,7 +81,7 @@ class ApiRepository{
     final response = await api.get(endpoint);
     if(response.statusCode == 200){
       Map<String, dynamic> data = Map<String, dynamic>.from(response.data);
-      return UserModel.fromJson(data);
+      return UserModel.fromJson(data['data']);
     }
     else{
       throw Exception('Failed to load user');

@@ -7,6 +7,7 @@ import 'package:mafiaclient/views/home_page.dart';
 import '../exceptions/auth_exception.dart';
 import '../models/user_model.dart';
 import '../views/sign_in_page.dart';
+import '../views/sign_up_page.dart';
 
 enum AuthStatus {initial, authenticated, unauthenticated}
 
@@ -33,6 +34,7 @@ class AuthController extends GetxController{
       if(await ApiService().isTokenExist()){
         await ApiService().readToken();
         user.value = await ApiRepository().getMyUser();
+        authStatus.value = AuthStatus.authenticated;
       }
       else{
         throw Exception('Token don\'t exist');
@@ -87,6 +89,14 @@ class AuthController extends GetxController{
     }
   }
 
+  void logout() async {
+    status.value = Status.initial;
+    errorMessage.value = '';
+    user.value = UserModel.empty();
+    await ApiService().deleteToken();
+    authStatus.value = AuthStatus.unauthenticated;
+  }
+
   
   
   void _setInitialScreen(AuthStatus authStatus) {
@@ -96,6 +106,20 @@ class AuthController extends GetxController{
       status.value = Status.initial;
       Get.offAll(() => SignInPage()); 
     }
+  }
+
+
+  void goToSignIn(){
+    status.value = Status.initial;
+    errorMessage.value = '';
+    Get.to(() => SignUpPage()); 
+  }
+
+
+  void goToSignUp(){
+    status.value = Status.initial;
+    errorMessage.value = '';
+    Get.to(() => SignInPage()); 
   }
    
 }
