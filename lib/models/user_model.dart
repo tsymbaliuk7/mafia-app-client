@@ -5,6 +5,13 @@ class UserModel{
   final bool isMutedVideo;
   final bool isMutedAudio;
 
+  UserModel.empty() : 
+    id = 0, 
+    username = '', 
+    email = '', 
+    isMutedAudio = false, 
+    isMutedVideo = false;
+
   UserModel({
     required this.id, 
     required this.username, 

@@ -6,7 +6,7 @@ import '../controllers/auth_controller.dart';
 class StartPage extends StatelessWidget {
   StartPage({Key? key}) : super(key: key);
 
-  final AuthController webrtcController = Get.put(AuthController());
+  final AuthController authController = Get.put(AuthController());
 
   @override
   Widget build(BuildContext context) {

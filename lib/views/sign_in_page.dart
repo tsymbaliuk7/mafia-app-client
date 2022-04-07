@@ -1,7 +1,15 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../controllers/auth_controller.dart';
+import '../controllers/rooms_controller.dart';
+import '../widgets/primary_buttons.dart';
 
 class SignInPage extends StatefulWidget {
-  const SignInPage({Key? key}) : super(key: key);
+  SignInPage({Key? key}) : super(key: key);
+  
+  final AuthController authController = Get.find();
 
   @override
   State<SignInPage> createState() => _SignInPageState();
@@ -22,7 +30,7 @@ class _SignInPageState extends State<SignInPage> {
     String pattern = r"^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$";
     RegExp regex = RegExp(pattern);
     if (value == null || value.isEmpty || !regex.hasMatch(value)) {
-      return 'Введіть правильну електронну адресу';
+      return 'Enter valid email';
     }
     return null;
   }
@@ -50,6 +58,29 @@ class _SignInPageState extends State<SignInPage> {
                 ),
                 child: Column(
                   children: [
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 15),
+                      child: Text(
+                        'Sign In',
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 40),
+                      child: Text(
+                        'Enter your account',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xff7C7C7C),
+                        ),
+                      ),
+                    ),
                     Form(
                       key: _formKey,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -93,9 +124,9 @@ class _SignInPageState extends State<SignInPage> {
                             controller: passwordController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Введіть пароль';
+                                return 'Enter password';
                               } else if (value.length < 8) {
-                                return 'Довжина паролю повинна бути не менше 8 символів';
+                                return 'Password should be longer than 8 characters';
                               }
                               return null;
                             },
@@ -109,7 +140,7 @@ class _SignInPageState extends State<SignInPage> {
                             ),
                             decoration: InputDecoration(
                               contentPadding: const EdgeInsets.only(top: 20, left: 20, right: 20),
-                              hintText: 'Пароль',
+                              hintText: 'Password',
                               filled: true,
                               isDense: true,
                               border: OutlineInputBorder(
@@ -149,6 +180,75 @@ class _SignInPageState extends State<SignInPage> {
                               ),
                             ),
                           ),
+                          Obx((){
+                            if (widget.authController.status.value == Status.failure 
+                              && widget.authController.errorMessage.value.isNotEmpty) {
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: Text(widget.authController.errorMessage.value,
+                                    style: const TextStyle(color: Colors.red, fontSize: 12)),
+                              );
+                            } else {
+                              return Container();
+                            }
+                          }),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 50, bottom: 25),
+                            child: PrimaryButton(
+                              buttonHeight: 42,
+                              title: 'confirm',
+                              onTap: () {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                if (_formKey.currentState!.validate()) {
+                                  widget.authController.signIn(emailController.text, passwordController.text);
+                                }
+                              },
+                            ),
+                          ),
+                          // Padding(
+                          //   padding: const EdgeInsets.only(bottom: 42),
+                          //   child: Center(
+                          //     child: RichText(
+                          //         text: TextSpan(
+                          //       text: 'Forgot password? ',
+                          //       recognizer: TapGestureRecognizer()..onTap = () => {},
+                          //       style: const TextStyle(
+                          //         fontSize: 14,
+                          //         fontWeight: FontWeight.w600,
+                          //         color: Color(0xff2B2B2B),
+                          //         letterSpacing: 0.7,
+                          //       ),
+                          //     )),
+                          //   ),
+                          // ),
+                          Center(
+                            child: RichText(
+                              text: TextSpan(
+                                text: 'Don\'t have an account? ',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xff6C6C6C),
+                                  letterSpacing: 0.7,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: 'Sign Up',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF6957FE),
+                                      letterSpacing: 0.7,
+                                    ),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () {
+                                      
+                                      },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
                         ],
                       ),
                     ),
