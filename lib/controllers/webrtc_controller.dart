@@ -4,11 +4,12 @@ import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart';
 import 'package:mafiaclient/controllers/rooms_controller.dart';
+import 'package:mafiaclient/models/user_model.dart';
 import 'package:mafiaclient/models/webrtc_user.dart';
-import 'package:typed_data/typed_data.dart';
 
 import '../globals.dart';
 import '../network/socket_service.dart';
+import 'auth_controller.dart';
 
 class WebRTCController extends GetxController{
 
@@ -16,6 +17,7 @@ class WebRTCController extends GetxController{
   late String localClient;
   var status = Status.initial.obs;
   var webrtcClients = <String, WebRTCUser>{}.obs;
+  final AuthController authController = Get.find();
   
   @override
   void onInit() {
@@ -55,9 +57,20 @@ class WebRTCController extends GetxController{
         _setMediaValues(Map<String, dynamic>.from(data));
       });
     }
+    if(!SocketService().socket.hasListeners('receive-peer-user-data')){
+      SocketService().socket.on('receive-peer-user-data', (data){
+        _setUserByPeer(Map<String, dynamic>.from(data));
+      });
+    }
     localClient = SocketService().socket.id!;    
 
     super.onInit();
+  }
+
+
+  void _setUserByPeer(Map<String, dynamic> data) async {
+    webrtcClients[data['peerID']]!.user = UserModel.fromJson(data['user']);
+    update();
   }
 
   void _setMediaValues(Map<String, dynamic> data){
@@ -87,11 +100,23 @@ class WebRTCController extends GetxController{
         webrtcClients[localClient]!.videoRenderer = webrtc.RTCVideoRenderer();
         webrtcClients[localClient]!.videoRenderer!.initialize();
         webrtcClients[localClient]!.videoRenderer!.srcObject = await webrtc.navigator.mediaDevices.getUserMedia(constraints);
+        webrtcClients[localClient]!.user = authController.user.value;
+
+        webrtcClients[localClient]!.isMutedAudio.value = authController.user.value.isMutedAudio;
+        webrtcClients[localClient]!.videoRenderer!.srcObject!.getAudioTracks()[0].enabled = !authController.user.value.isMutedAudio;
+    
+        webrtcClients[localClient]!.isMutedVideo.value = authController.user.value.isMutedVideo;
+        webrtcClients[localClient]!.videoRenderer!.srcObject!.getVideoTracks()[0].enabled = !authController.user.value.isMutedVideo;
+
 
         webrtcClients[localClient]!.isReadyToDisplay.value = true;
 
         status.value = Status.success;
-        SocketService().socket.emit('join', {'room': room});
+
+        SocketService().socket.emit('join', {
+          'room': room, 
+          }
+        );
 
       }
       catch(_){
@@ -163,11 +188,16 @@ class WebRTCController extends GetxController{
   Future<void> addPeer(Map<String, dynamic> data) async {
    
     if(!webrtcClients.containsKey(data['peerID'])){
-      
       bool createOffer = data['createOffer'];
       String peerId = data['peerID'];
 
+
       webrtcClients[peerId] = WebRTCUser(peerId: peerId);
+
+      SocketService().socket.emit('send-user-id', {
+        'peer': peerId,
+        'user_id': authController.user.value.id
+      });
       
       webrtcClients[peerId]!.connection = await createPeerConnection(configuration);
 
@@ -182,6 +212,8 @@ class WebRTCController extends GetxController{
         'video': webrtcClients[localClient]!.isMutedVideo.value,
         'audio': webrtcClients[localClient]!.isMutedAudio.value,
       });
+
+      
       
       webrtcClients[peerId]!.connection?.onIceCandidate = (candidate) {
         SocketService().socket.emit('relay-ice',

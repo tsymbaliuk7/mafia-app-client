@@ -55,7 +55,6 @@ class AuthController extends GetxController{
       'isMutedAudio': isMutedAudio,
       'isMutedVideo': isMutedVideo,
     };
-    print(data);
     try{
       user.value = await ApiRepository().updateUser(data);
       updateUserStatus.value = Status.success;

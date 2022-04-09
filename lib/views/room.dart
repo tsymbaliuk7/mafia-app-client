@@ -65,7 +65,12 @@ class _RoomPageState extends State<RoomPage> {
                                   .where((element) => widget
                                     .webrtcController
                                     .webrtcClients[element]
-                                    !.isReadyToDisplay.value)
+                                    !.isReadyToDisplay.value 
+                                    && 
+                                    widget
+                                    .webrtcController
+                                    .webrtcClients[element]
+                                    ?.user != null)
                                   .toList();
                               return GridView.builder(
                                 itemCount: itemList.length,

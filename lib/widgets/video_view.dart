@@ -43,7 +43,7 @@ class VideoView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        peer[0].toUpperCase(),
+                        webrtcController.webrtcClients[peer]!.user?.username[0].toUpperCase() ?? '',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.black.withOpacity(0.7), fontSize: 40),
                       ),
@@ -51,6 +51,22 @@ class VideoView extends StatelessWidget {
                   ),
                 ),
               )
+            ),
+            Positioned(
+              left: 5,
+              bottom: 20,
+              child: Container(
+                
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.3),
+                  borderRadius: const BorderRadius.all(Radius.circular(40)),
+                ),
+                padding: const EdgeInsets.all(5),
+                child: Text(webrtcController.webrtcClients[peer]!.user?.username.toUpperCase() ?? '', style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500
+                ),),
+              ),
             ),
             webrtcController.webrtcClients[peer]!.isMutedAudio.value ? Positioned(
               right: 5,
@@ -69,7 +85,9 @@ class VideoView extends StatelessWidget {
                 ),
               )
             )
-            : const SizedBox()
+            : const SizedBox(),
+            
+            
           ],
         );
       }
