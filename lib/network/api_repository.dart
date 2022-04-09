@@ -88,9 +88,36 @@ class ApiRepository{
     }
   }
 
-  // Future<UserModel> UpdateMyUser(Map<String, dynamic> data) async{
+  Future<UserModel> updateUser(Map<String, dynamic> data) async{
+    String endpoint = 'user';
+    final  api = ApiService().getApiWithOptions(withAuth: true);
+    try{
+      final response = await api.put(endpoint, data: data);
+      if(response.statusCode == 200){
+        Map<String, dynamic> data = Map<String, dynamic>.from(response.data);
+        return UserModel.fromJson(data['data']);
+      }
+      else{
+        throw Exception('Failed to load user');
+      }
+    }
+    catch(e){
+      if(e is DioError){
+        int status = e.response?.statusCode ?? 401;
+        if (status < 500) {
+          Map<String, dynamic> data = Map<String, dynamic>.from(e.response?.data);
+          throw AuthException(data['message']);
+        } else {
+          rethrow;
+        }
+      }
+      else{
+        rethrow;
+      }
+    }
     
-  // }
+  }
+
 
 
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/views/account_page.dart';
 import 'package:mafiaclient/views/room.dart';
 import 'package:uuid/uuid.dart';
 
@@ -29,9 +30,9 @@ class HomePage extends StatelessWidget {
                       children: [
                         IconButton(
                           onPressed: (){
-                            authController.logout();
+                            Get.to(() => AccountPage());
                           }, 
-                          icon: const Icon(Icons.logout_rounded)
+                          icon: const Icon(Icons.account_circle_outlined)
                         ),
                       ],
                     ),

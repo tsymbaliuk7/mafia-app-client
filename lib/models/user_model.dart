@@ -2,8 +2,8 @@ class UserModel{
   final int id;
   final String username;
   final String email;
-  final bool isMutedVideo;
-  final bool isMutedAudio;
+  bool isMutedVideo;
+  bool isMutedAudio;
 
   UserModel.empty() : 
     id = 0, 
@@ -25,6 +25,8 @@ class UserModel{
       id: json["id"],
       username: json["username"],
       email: json["email"],
+      isMutedVideo: json["isMutedVideo"],
+      isMutedAudio: json["isMutedAudio"],
     );
   }
 
@@ -33,6 +35,8 @@ class UserModel{
     data["id"] = id;
     data["username"] = username;
     data["email"] = email;
+    data["isMutedVideo"] = isMutedVideo;
+    data["isMutedAudio"] = isMutedAudio;
     return data;
   }
 

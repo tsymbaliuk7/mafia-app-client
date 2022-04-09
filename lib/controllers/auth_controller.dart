@@ -14,6 +14,7 @@ enum AuthStatus {initial, authenticated, unauthenticated}
 
 class AuthController extends GetxController{
   var authStatus = AuthStatus.initial.obs;
+  var updateUserStatus = Status.initial.obs;
   var status = Status.initial.obs;
   var errorMessage = ''.obs;
   Rx<UserModel> user = UserModel.empty().obs;
@@ -41,9 +42,35 @@ class AuthController extends GetxController{
       }
     }
     catch(_){
+      ApiService().deleteToken();
       user.value = UserModel.empty();
       authStatus.value = AuthStatus.unauthenticated;
     }
+  }
+
+  void updateUser(String username, bool isMutedAudio, bool isMutedVideo) async {
+    updateUserStatus.value = Status.initial;
+    Map<String, dynamic> data = {
+      'username': username,
+      'isMutedAudio': isMutedAudio,
+      'isMutedVideo': isMutedVideo,
+    };
+    print(data);
+    try{
+      user.value = await ApiRepository().updateUser(data);
+      updateUserStatus.value = Status.success;
+      errorMessage.value = '';
+      Get.back();
+    }
+    on AuthException catch(error){
+      status.value = Status.failure;
+      errorMessage.value = error.message;
+    }
+    on Exception catch(_){
+      status.value = Status.failure;
+      errorMessage.value = 'Errors in sign in! Please, try again';
+    }
+
   }
 
 
@@ -57,6 +84,7 @@ class AuthController extends GetxController{
       });
       status.value = Status.success;
       authStatus.value = AuthStatus.authenticated;
+      errorMessage.value = '';
     }
     on AuthException catch(error){
       status.value = Status.failure;
@@ -78,6 +106,7 @@ class AuthController extends GetxController{
       });
       status.value = Status.success;
       authStatus.value = AuthStatus.authenticated;
+      errorMessage.value = '';
     }
     on AuthException catch(error){
       status.value = Status.failure;
@@ -112,14 +141,14 @@ class AuthController extends GetxController{
   void goToSignIn(){
     status.value = Status.initial;
     errorMessage.value = '';
-    Get.to(() => SignUpPage()); 
+    Get.to(() => SignInPage()); 
   }
 
 
   void goToSignUp(){
     status.value = Status.initial;
     errorMessage.value = '';
-    Get.to(() => SignInPage()); 
+    Get.to(() => SignUpPage()); 
   }
    
 }

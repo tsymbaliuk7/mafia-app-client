@@ -113,7 +113,7 @@ class _SignUpPagePageState extends State<SignUpPage> {
                             ),
                             decoration:
                                 InputDecoration(
-                              hintText: 'Ім\'я',
+                              hintText: 'Username',
                               hintStyle:
                                   const TextStyle(
                                 color:

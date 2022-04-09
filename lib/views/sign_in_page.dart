@@ -226,7 +226,7 @@ class _SignInPageState extends State<SignInPage> {
                                     ),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
-                                        widget.authController.goToSignIn();
+                                        widget.authController.goToSignUp();
                                       },
                                   ),
                                 ],
