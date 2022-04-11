@@ -62,7 +62,7 @@ class VideoView extends StatelessWidget {
                   borderRadius: const BorderRadius.all(Radius.circular(40)),
                 ),
                 padding: const EdgeInsets.all(5),
-                child: Text(webrtcController.webrtcClients[peer]!.user?.username.toUpperCase() ?? '', style: const TextStyle(
+                child: Text(webrtcController.webrtcClients[peer]!.user?.username ?? '', style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w500
                 ),),

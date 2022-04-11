@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:mafiaclient/globals.dart';
 
 class PrimaryButton extends StatelessWidget {
   final Function()? onTap;
   final String title;
   final double buttonHeight;
 
-  final gradientColors = const [Color(0xFF6957FE), Color(0xFF7B98FF)];
 
   const PrimaryButton({
     Key? key,
@@ -22,7 +22,7 @@ class PrimaryButton extends StatelessWidget {
           child: Container(
             height: buttonHeight,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: gradientColors,
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,

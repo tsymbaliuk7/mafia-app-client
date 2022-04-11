@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/views/home_page.dart';
 
 import '../controllers/webrtc_controller.dart';
 
@@ -29,7 +31,7 @@ class BottomNavBar extends StatelessWidget {
               child: const Icon(Icons.phone), 
               elevation: 0.1, 
               onPressed: () {
-                Navigator.of(context).pop();
+                Get.offAll(() => HomePage());
               },
             ),
           ),
@@ -40,6 +42,15 @@ class BottomNavBar extends StatelessWidget {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onLongPress: () {
+                        Clipboard.setData(ClipboardData(text: webrtcController.room));
+                      },
+                      child: Text(webrtcController.room)
+                    ),
+                  ),
                   
                   Material(
                     borderRadius: BorderRadius.circular(40),

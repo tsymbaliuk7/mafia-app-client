@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:mafiaclient/controllers/rooms_controller.dart';
 import 'package:mafiaclient/models/user_model.dart';
 import 'package:mafiaclient/models/webrtc_user.dart';
+import 'package:mafiaclient/views/home_page.dart';
 
 import '../globals.dart';
 import '../network/socket_service.dart';
@@ -18,10 +19,13 @@ class WebRTCController extends GetxController{
   var status = Status.initial.obs;
   var webrtcClients = <String, WebRTCUser>{}.obs;
   final AuthController authController = Get.find();
+
+  bool isForceQuit = false;
   
   @override
   void onInit() {
     status.value = Status.loading;
+    isForceQuit = false;
     if(!SocketService().socket.hasListeners('add-peer')){
       SocketService().socket.on('add-peer', (data){
         addPeer(Map<String, dynamic>.from(data));
@@ -62,9 +66,53 @@ class WebRTCController extends GetxController{
         _setUserByPeer(Map<String, dynamic>.from(data));
       });
     }
+    if(!SocketService().socket.hasListeners('force-leave-room')){
+      SocketService().socket.on('force-leave-room', (data){
+        _forceLeaveRoom(Map<String, dynamic>.from(data));
+      });
+    }
     localClient = SocketService().socket.id!;    
 
     super.onInit();
+  }
+
+  void _forceLeaveRoom(Map<String, dynamic> data){
+    String targetPeer = webrtcClients
+      .values
+      .where((element) => 
+        element.peerId != data['sender_peer'] 
+          && element.user!.id == data['user_id']).toList()[0].peerId;
+    if(localClient == targetPeer){
+      SocketService().socket.emit('leave-socket-room', {
+          'room': room,
+        }
+      );
+      isForceQuit = true;
+      Get.offAll(() => HomePage());
+    }
+    else{
+      if(webrtcClients.containsKey(targetPeer)){
+        if (webrtcClients[targetPeer] != null){ 
+          webrtcClients[targetPeer]?.connection!.close();
+          webrtcClients[targetPeer]?.connection = null;
+
+          webrtcClients[targetPeer]?.videoRenderer!.srcObject!.getTracks().forEach((track) => track.stop());
+          webrtcClients[targetPeer]?.videoRenderer!.srcObject!.dispose(); 
+          webrtcClients[targetPeer]?.videoRenderer!.dispose();
+          webrtcClients[targetPeer]?.videoRenderer = null;
+
+
+          webrtcClients[targetPeer]?.isReadyToDisplay.value = false;
+
+          
+          webrtcClients.remove(targetPeer);
+          
+          
+        
+        }
+      }
+    }
+    
   }
 
 
@@ -114,7 +162,8 @@ class WebRTCController extends GetxController{
         status.value = Status.success;
 
         SocketService().socket.emit('join', {
-          'room': room, 
+          'room': room,
+          'user_id': authController.user.value.id,
           }
         );
 
@@ -282,17 +331,18 @@ class WebRTCController extends GetxController{
         webrtcClients[peer]?.connection!.close();
         webrtcClients[peer]?.connection = null;
 
-        webrtcClients[peer]!.videoRenderer!.srcObject!.getTracks().forEach((track) => track.stop());
-        webrtcClients[peer]!.videoRenderer!.srcObject!.dispose(); 
-        webrtcClients[peer]!.videoRenderer!.dispose();
-        webrtcClients[peer]!.videoRenderer = null;
+        webrtcClients[peer]?.videoRenderer!.srcObject!.getTracks().forEach((track) => track.stop());
+        webrtcClients[peer]?.videoRenderer!.srcObject!.dispose(); 
+        webrtcClients[peer]?.videoRenderer!.dispose();
+        webrtcClients[peer]?.videoRenderer = null;
 
 
-        webrtcClients[peer]!.isReadyToDisplay.value = false;
+        webrtcClients[peer]?.isReadyToDisplay.value = false;
 
+        
         webrtcClients.remove(peer);
-
-
+        
+        
       
       }
     }
@@ -312,7 +362,10 @@ class WebRTCController extends GetxController{
       }
 
       webrtcClients.value = {};
-      SocketService().socket.emit('leave', {'roomID': room});
+      if(!isForceQuit){
+        print('!force');
+        SocketService().socket.emit('leave', {'roomID': room, 'user_id': authController.user.value.id});
+      }
     }
 
 

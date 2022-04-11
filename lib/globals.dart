@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 List<String> STUN =[
   "stun:stun.l.google.com:19302",
   "stun:stun1.l.google.com:19302",
@@ -14,6 +16,8 @@ List<String> STUN =[
   "stun:stun.voipstunt.com",
   "stun:stun.voxgratia.org"
 ];
+
+const gradientColors = [Color(0xFF6957FE), Color(0xFF7B98FF)];
 
   Map<String, dynamic> configuration = {
     'iceServers': [

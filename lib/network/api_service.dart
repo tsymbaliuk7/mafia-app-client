@@ -1,6 +1,6 @@
 
 import 'package:dio/dio.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService{
 
@@ -43,21 +43,25 @@ class ApiService{
 
 
   void writeToken(String token) async {
-    await GetStorage().write('token', token);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
     this.token = token;
   }
 
   Future<bool> isTokenExist() async{
-    return GetStorage().read('token') != null;
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token') != null;
   }
 
   Future<void> readToken() async {
-    var token = GetStorage().read('token');
+    final prefs = await SharedPreferences.getInstance();
+    var token = prefs.getString('token');
     this.token = token;
   }
 
   Future<void> deleteToken() async {
-    await GetStorage().remove('token');
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
     token = null;
   }
 
