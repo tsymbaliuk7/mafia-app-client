@@ -29,6 +29,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   dio: ^4.0.6
   shared_preferences: ^2.0.13
+  fluttertoast: ^8.0.9
 
 dev_dependencies:
   flutter_test:

@@ -93,14 +93,16 @@ class RoomsController extends GetxController{
         onConfirm: (){
           SocketService().socket.emit('force-leave-request', {
             'room': data['current_room'],
-            'user_id': authController.user.value.id
+            'user_id': authController.user.value.id,
+            'current_peer': data['current_peer']
           });
           Get.offAll(() => RoomPage(id: data['current_room']));
         },
         onCancel: (){
           SocketService().socket.emit('force-leave-request', {
             'room': data['current_room'],
-            'user_id': authController.user.value.id
+            'user_id': authController.user.value.id,
+            'current_peer': data['current_peer']
           });
           Get.offAll(() => RoomPage(id: data['is_creating'] ? const Uuid().v4().split('-')[0] : data['room']));
         },
@@ -133,6 +135,14 @@ class RoomsController extends GetxController{
       'is_creating': isCreating,
       'user_id': authController.user.value.id,
     });
+  }
+
+  @override
+  void onClose() {
+    SocketService().socket.off('have-another-room');
+    SocketService().socket.off('check-joining-room-failure');
+    SocketService().socket.off('check-joining-room-success');
+    super.onClose();
   }
 
 }

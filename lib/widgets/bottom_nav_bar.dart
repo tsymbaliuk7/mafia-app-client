@@ -31,6 +31,7 @@ class BottomNavBar extends StatelessWidget {
               child: const Icon(Icons.phone), 
               elevation: 0.1, 
               onPressed: () {
+                webrtcController.isForceQuit = false;
                 Get.offAll(() => HomePage());
               },
             ),
@@ -42,16 +43,7 @@ class BottomNavBar extends StatelessWidget {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onLongPress: () {
-                        Clipboard.setData(ClipboardData(text: webrtcController.room));
-                      },
-                      child: Text(webrtcController.room)
-                    ),
-                  ),
-                  
+ 
                   Material(
                     borderRadius: BorderRadius.circular(40),
                     color: webrtcController.webrtcClients[webrtcController.localClient]!.isMutedAudio.value 

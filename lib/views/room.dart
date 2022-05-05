@@ -1,9 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mafiaclient/controllers/rooms_controller.dart';
 import 'package:mafiaclient/controllers/webrtc_controller.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/video_view.dart';
@@ -23,10 +25,14 @@ class RoomPage extends StatefulWidget{
 
 class _RoomPageState extends State<RoomPage> {
 
+  late FToast fToast;
+
   @override
   void initState() {
     widget.webrtcController.startCapturing(widget.id);
     super.initState();
+    fToast = FToast();
+    fToast.init(context);
   }
 
 
@@ -35,6 +41,31 @@ class _RoomPageState extends State<RoomPage> {
     widget.webrtcController.leaveRoom();
     super.dispose();
   }
+
+
+_showToast() {
+    Widget toast = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25.0),
+        color: const Color.fromARGB(255, 237, 237, 237),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+            Text("Copied to clipboard"),
+        ],
+      ),
+    );
+
+
+    fToast.showToast(
+        child: toast,
+        gravity: ToastGravity.TOP,
+        toastDuration: const Duration(seconds: 1),
+    );
+    
+}
 
   
 
@@ -54,7 +85,7 @@ class _RoomPageState extends State<RoomPage> {
                   children: [
                     Expanded(
                       child: LayoutBuilder(builder: (context, constraints) {
-                        int count = min(max((constraints.maxWidth / 300.0).round(), 2), 4);
+                        int count = constraints.maxWidth >= 900 ? 4 : 2;
                         return Obx(() {
                             if(widget.webrtcController.status.value == Status.success){
                               var itemList = widget
@@ -76,8 +107,8 @@ class _RoomPageState extends State<RoomPage> {
                                 gridDelegate: 
                                   SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: count,
-                                    mainAxisSpacing: 25,
-                                    crossAxisSpacing: 25,
+                                    mainAxisSpacing: 10,
+                                    crossAxisSpacing: 10,
                                     childAspectRatio: 1.2
                                   ),
                                 itemBuilder: (context, index){
@@ -98,6 +129,56 @@ class _RoomPageState extends State<RoomPage> {
                   ],
                 ),
               ),
+              Obx(() {
+                if(widget.webrtcController.status.value == Status.success){
+                  return Positioned(
+                    top: 0,
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(10),
+                                bottomRight: Radius.circular(10)
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  spreadRadius: 2,
+                                  blurRadius: 3,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  Clipboard.setData(ClipboardData(text: widget.webrtcController.room));
+                                  _showToast();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(widget.webrtcController.room),
+                                )
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                else{
+                  return Container();
+                }
+              }),
+              
+              
               Obx(() {
                 if(widget.webrtcController.status.value == Status.success){
                   return Positioned(
