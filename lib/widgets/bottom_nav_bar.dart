@@ -7,7 +7,9 @@ import '../controllers/webrtc_controller.dart';
 
 
 class BottomNavBar extends StatelessWidget {
-  BottomNavBar({Key? key}) : super(key: key);
+  BottomNavBar({Key? key, required this.openDrawer}) : super(key: key);
+
+  final void Function()? openDrawer;
 
   final WebRTCController webrtcController = Get.find();
 
@@ -24,72 +26,108 @@ class BottomNavBar extends StatelessWidget {
             size: Size(size.width, 80),
             painter: BottomCustomPainter(),
           ),
-          Center(
-            heightFactor: 0.6,
-            child: FloatingActionButton(
-              backgroundColor: Colors.red, 
-              child: const Icon(Icons.phone), 
-              elevation: 0.1, 
-              onPressed: () {
-                webrtcController.isForceQuit = false;
-                Get.offAll(() => HomePage());
-              },
-            ),
-          ),
+          
           SizedBox(
             width: size.width,
             height: 80,
             child: Obx((){
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
- 
-                  Material(
-                    borderRadius: BorderRadius.circular(40),
-                    color: webrtcController.webrtcClients[webrtcController.localClient]!.isMutedAudio.value 
-                      ? const Color.fromARGB(255, 231, 231, 231)
-                      : Colors.transparent,
-                    child: InkWell( 
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Material(
+                      borderRadius: BorderRadius.circular(40),
+                      color: Colors.transparent,
+                      child: InkWell( 
                         borderRadius: BorderRadius.circular(40),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
                           child: Icon(
-                            webrtcController.webrtcClients[webrtcController.localClient]!.isMutedAudio.value
-                            ? Icons.mic_off_rounded
-                            : Icons.mic_rounded,
+                            Icons.list,
                             color:Colors.grey,
                             size: 25,
                           ),
                         ),
-                        onTap: () {
-                          webrtcController.toggleMuteAudio();
-                        }),
-                  ),
-                  Container(
-                    width: 150,
-                  ),
-                  Material(
-                    borderRadius: BorderRadius.circular(40),
-                    color: webrtcController.webrtcClients[webrtcController.localClient]!.isMutedVideo.value 
-                      ? const Color.fromARGB(255, 231, 231, 231)
-                      : Colors.transparent,
-                    child: InkWell(
-                        borderRadius: BorderRadius.circular(40),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Icon(
-                            webrtcController.webrtcClients[webrtcController.localClient]!.isMutedVideo.value
-                            ? Icons.videocam_off_rounded
-                            : Icons.videocam_rounded,
-                            color:Colors.grey,
-                            size: 25,
+                        onTap: openDrawer
+                      ),
+                    ),
+                    
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Material(
+                          borderRadius: BorderRadius.circular(40),
+                          color: webrtcController.webrtcClients[webrtcController.localClient]!.isMutedAudio.value 
+                            ? const Color.fromARGB(255, 231, 231, 231)
+                            : Colors.transparent,
+                          child: InkWell( 
+                            borderRadius: BorderRadius.circular(40),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Icon(
+                                webrtcController.webrtcClients[webrtcController.localClient]!.isMutedAudio.value
+                                ? Icons.mic_off_rounded
+                                : Icons.mic_rounded,
+                                color:Colors.grey,
+                                size: 25,
+                              ),
+                            ),
+                            onTap: () {
+                              webrtcController.toggleMuteAudio();
+                            }
                           ),
                         ),
-                        onTap: () {
-                          webrtcController.toggleMuteVideo();
-                        }),
-                  ),
-                ],
+
+                         Padding(
+                           padding: const EdgeInsets.symmetric(horizontal: 10),
+                           child: Material(
+                            borderRadius: BorderRadius.circular(40),
+                            color:Colors.transparent,
+                            child: InkWell( 
+                              borderRadius: BorderRadius.circular(40),
+                              child: const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Icon(
+                                  Icons.phone,
+                                  color:Colors.red,
+                                  size: 25,
+                                ),
+                              ),
+                              onTap: () {
+                                webrtcController.isForceQuit = false;
+                                Get.offAll(() => HomePage());
+                              },
+                            )
+                          ),
+                        ),
+
+                        Material(
+                          borderRadius: BorderRadius.circular(40),
+                          color: webrtcController.webrtcClients[webrtcController.localClient]!.isMutedVideo.value 
+                            ? const Color.fromARGB(255, 231, 231, 231)
+                            : Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(40),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Icon(
+                                webrtcController.webrtcClients[webrtcController.localClient]!.isMutedVideo.value
+                                ? Icons.videocam_off_rounded
+                                : Icons.videocam_rounded,
+                                color:Colors.grey,
+                                size: 25,
+                              ),
+                            ),
+                            onTap: () {
+                              webrtcController.toggleMuteVideo();
+                            }
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               );
               }
             ),
@@ -108,11 +146,11 @@ class BottomCustomPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     Path path = Path();
-    path.moveTo(0, 20);
-    path.quadraticBezierTo(size.width * 0.50, -10, size.width, 20);
+    path.moveTo(0, 0);
+    path.lineTo(size.width, 0);
     path.lineTo(size.width, size.height);
     path.lineTo(0, size.height);
-    path.lineTo(0, 20);
+    path.lineTo(0, 0);
     canvas.drawShadow(path, Colors.black, 10, true);
     canvas.drawPath(path, paint);
   }

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/controllers/game_controller.dart';
 import 'package:mafiaclient/controllers/rooms_controller.dart';
 import 'package:mafiaclient/models/user_model.dart';
 import 'package:mafiaclient/models/webrtc_user.dart';
@@ -18,6 +19,8 @@ class WebRTCController extends GetxController{
   late String localClient;
   var status = Status.initial.obs;
   late RxMap<String, WebRTCUser> webrtcClients;
+
+  final GameController game = Get.find();
   final AuthController authController = Get.find();
 
   bool isForceQuit = false;
@@ -117,6 +120,7 @@ class WebRTCController extends GetxController{
 
   void _setUserByPeer(Map<String, dynamic> data) async {
     webrtcClients[data['peerID']]!.user = UserModel.fromJson(data['user']);
+    print('_setUserByPeer');
     update();
   }
 
@@ -161,7 +165,7 @@ class WebRTCController extends GetxController{
 
       SocketService().socket.emit('join', {
         'room': room,
-        'user_id': authController.user.value.id,
+        'user': authController.user.toJson(),
         }
       );
 
@@ -171,6 +175,15 @@ class WebRTCController extends GetxController{
     }
   
     
+  }
+
+  WebRTCUser? getWebRTCUser(int userId){
+    try {
+      return webrtcClients.values.firstWhere((element) => element.user?.id == userId);
+    }
+    on StateError catch(_){
+      return null;
+    }
   }
 
   void toggleMuteAudio(){
@@ -224,6 +237,8 @@ class WebRTCController extends GetxController{
       webrtcClients[name]!.videoRenderer!.srcObject = stream;
 
       webrtcClients[name]!.isReadyToDisplay.value = true;
+      
+      webrtcClients.refresh();
 
 
     };
@@ -337,7 +352,8 @@ class WebRTCController extends GetxController{
 
         webrtcClients[peer]?.isReadyToDisplay.value = false;
 
-        
+        game.deletePlayer(webrtcClients[peer]!.user!.id);
+
         webrtcClients.remove(peer);
         
         
@@ -346,25 +362,25 @@ class WebRTCController extends GetxController{
     }
   }
 
-    void leaveRoom(){
-      for (String peer in webrtcClients.keys) {
+  void leaveRoom(){
+    for (String peer in webrtcClients.keys) {
 
-        webrtcClients[peer]?.connection?.close();
-        webrtcClients[peer]?.connection = null;
-        
-        webrtcClients[peer]!.videoRenderer!.srcObject!.getTracks().forEach((track){track.stop();});
-        webrtcClients[peer]!.videoRenderer!.srcObject!.dispose(); 
-        webrtcClients[peer]!.videoRenderer!.dispose();
-        webrtcClients[peer]!.videoRenderer = null;
+      webrtcClients[peer]?.connection?.close();
+      webrtcClients[peer]?.connection = null;
       
-      }
-
-      webrtcClients.value = {};
-
-      if(!isForceQuit){
-        SocketService().socket.emit('leave', {'roomID': room, 'user_id': authController.user.value.id});
-      }
+      webrtcClients[peer]!.videoRenderer!.srcObject!.getTracks().forEach((track){track.stop();});
+      webrtcClients[peer]!.videoRenderer!.srcObject!.dispose(); 
+      webrtcClients[peer]!.videoRenderer!.dispose();
+      webrtcClients[peer]!.videoRenderer = null;
+    
     }
+
+    webrtcClients.value = {};
+
+    if(!isForceQuit){
+      SocketService().socket.emit('leave', {'roomID': room, 'user_id': authController.user.value.id});
+    }
+  }
 
   @override
   void onClose() {

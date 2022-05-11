@@ -1,33 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/models/player_model.dart';
 
 import '../controllers/webrtc_controller.dart';
 
 class VideoView extends StatelessWidget {
-  final String peer;
+  final int playerOrder;
+  final PlayerModel playerModel;
   final WebRTCController webrtcController = Get.find();
 
 
-  VideoView({Key? key, required this.peer}) : super(key: key);
+  VideoView({Key? key, required this.playerModel, required this.playerOrder}) : super(key: key);
   
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-        return Stack(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.25),
-                borderRadius: BorderRadius.circular(25)
-              ),
-              child: !webrtcController.webrtcClients[peer]!.isMutedVideo.value 
-              ? RTCVideoView(
-                  webrtcController.webrtcClients[peer]!.videoRenderer!,
-                  mirror: peer == webrtcController.localClient,
-              )
-              : Center(
+        
+      var webrtcUser = webrtcController.getWebRTCUser(playerModel.user.id);
+
+      return webrtcUser != null ? Stack(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(
+              color: playerModel.isHost() ?const Color.fromARGB(255, 244, 212, 30).withOpacity(0.25) :Colors.black.withOpacity(0.25),
+              borderRadius: BorderRadius.circular(25)
+            ),
+            child: webrtcUser.isMutedVideo.value || webrtcUser.videoRenderer == null
+            ?  Center(
                 child: Container(
                   width: 100,
                   height: 100,
@@ -43,7 +44,7 @@ class VideoView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        webrtcController.webrtcClients[peer]!.user?.username[0].toUpperCase() ?? '',
+                        '$playerOrder${playerModel.user.username[0].toUpperCase()}',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.black.withOpacity(0.7), fontSize: 40),
                       ),
@@ -51,46 +52,52 @@ class VideoView extends StatelessWidget {
                   ),
                 ),
               )
-            ),
-            Positioned(
-              left: 5,
-              bottom: 20,
-              child: Container(
-                
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
-                  borderRadius: const BorderRadius.all(Radius.circular(40)),
-                ),
-                padding: const EdgeInsets.all(5),
-                child: Text(webrtcController.webrtcClients[peer]!.user?.username ?? '', style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500
-                ),),
-              ),
-            ),
-            webrtcController.webrtcClients[peer]!.isMutedAudio.value ? Positioned(
-              right: 5,
-              bottom: 20,
-              child: Container(
-                
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
-                  borderRadius: const BorderRadius.all(Radius.circular(40)),
-                ),
-                padding: const EdgeInsets.all(5),
-                child: Icon(
-                  Icons.mic_off_outlined,
-                  size: 20,
-                  color: Colors.white.withOpacity(0.6),
-                ),
-              )
+            : RTCVideoView(
+                webrtcUser.videoRenderer!,
+                mirror: webrtcUser.peerId == webrtcController.localClient,
             )
-            : const SizedBox(),
-            
-            
-          ],
-        );
-      }
-    );
+
+           
+          ),
+          Positioned(
+            left: 5,
+            bottom: 20,
+            child: Container(
+              
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.3),
+                borderRadius: const BorderRadius.all(Radius.circular(40)),
+              ),
+              padding: const EdgeInsets.all(5),
+              child: Text('${playerModel.isHost() ? '' : '$playerOrder.'}${playerModel.user.username}', style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500
+              ),),
+            ),
+          ),
+          
+          webrtcUser.isMutedAudio.value ? Positioned(
+            right: 5,
+            bottom: 20,
+            child: Container(
+              
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.3),
+                borderRadius: const BorderRadius.all(Radius.circular(40)),
+              ),
+              padding: const EdgeInsets.all(5),
+              child: Icon(
+                Icons.mic_off_outlined,
+                size: 20,
+                color: Colors.white.withOpacity(0.6),
+              ),
+            )
+          )
+          : const SizedBox(),
+          
+          
+        ],
+      ) : const SizedBox();
+    });
   }
 }

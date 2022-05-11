@@ -1,11 +1,12 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/controllers/game_controller.dart';
 import 'package:mafiaclient/controllers/rooms_controller.dart';
 import 'package:mafiaclient/controllers/webrtc_controller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mafiaclient/models/player_model.dart';
+import 'package:mafiaclient/widgets/game_drawer.dart';
 
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/video_view.dart';
@@ -17,6 +18,7 @@ class RoomPage extends StatefulWidget{
   RoomPage({Key? key, required this.id}) : super(key: key);
 
   final String id;
+  final GameController game = Get.put(GameController());
   final WebRTCController webrtcController = Get.put(WebRTCController());
 
   @override
@@ -24,6 +26,8 @@ class RoomPage extends StatefulWidget{
 }
 
 class _RoomPageState extends State<RoomPage> {
+
+  final GlobalKey<ScaffoldState> _key = GlobalKey();
 
   late FToast fToast;
 
@@ -48,7 +52,7 @@ _showToast() {
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25.0),
-        color: const Color.fromARGB(255, 237, 237, 237),
+        color: const Color.fromARGB(255, 243, 243, 243),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -62,7 +66,7 @@ _showToast() {
     fToast.showToast(
         child: toast,
         gravity: ToastGravity.TOP,
-        toastDuration: const Duration(seconds: 1),
+        toastDuration: const Duration(milliseconds: 800),
     );
     
 }
@@ -76,6 +80,8 @@ _showToast() {
         return false;
       },
       child: Scaffold(
+        key: _key,
+        drawer: GameDrawer(),
         body: SafeArea(
           child: Stack(
             children: [
@@ -87,21 +93,11 @@ _showToast() {
                       child: LayoutBuilder(builder: (context, constraints) {
                         int count = constraints.maxWidth >= 900 ? 4 : 2;
                         return Obx(() {
-                            if(widget.webrtcController.status.value == Status.success){
-                              var itemList = widget
-                                  .webrtcController
-                                  .webrtcClients
-                                  .keys
-                                  .where((element) => widget
-                                    .webrtcController
-                                    .webrtcClients[element]
-                                    !.isReadyToDisplay.value 
-                                    && 
-                                    widget
-                                    .webrtcController
-                                    .webrtcClients[element]
-                                    ?.user != null)
-                                  .toList();
+                            if(widget.webrtcController.status.value == Status.success 
+                              && widget.game.readyToDisplayGame.value){
+                                var itemList = <PlayerModel>[];
+                                itemList.addAll(widget.game.playersList.where((p0) => p0.role != PlayerRole.host));
+                              
                               return GridView.builder(
                                 itemCount: itemList.length,
                                 gridDelegate: 
@@ -112,7 +108,9 @@ _showToast() {
                                     childAspectRatio: 1.2
                                   ),
                                 itemBuilder: (context, index){
-                                  return VideoView(peer: itemList[index],);
+                                  return VideoView(
+                                    playerModel: itemList[index], 
+                                    playerOrder: widget.game.haveHost.value ? index : index + 1,);
                                 }
                               );
                             }
@@ -130,7 +128,8 @@ _showToast() {
                 ),
               ),
               Obx(() {
-                if(widget.webrtcController.status.value == Status.success){
+                if(widget.webrtcController.status.value == Status.success
+                  && widget.game.readyToDisplayGame.value){
                   return Positioned(
                     top: 0,
                     child: SizedBox(
@@ -180,11 +179,16 @@ _showToast() {
               
               
               Obx(() {
-                if(widget.webrtcController.status.value == Status.success){
+                if(widget.webrtcController.status.value == Status.success 
+                  && widget.game.readyToDisplayGame.value){
                   return Positioned(
                     bottom: 0,
                     left: 0,
-                    child: BottomNavBar(),
+                    child: BottomNavBar(
+                      openDrawer: (){
+                        _key.currentState!.openDrawer();
+                      },
+                    ),
                   );
                 }
                 else{

@@ -92,21 +92,22 @@ class ApiRepository{
     String endpoint = 'user';
     final  api = ApiService().getApiWithOptions(withAuth: true);
     try{
-      final response = await api.put(endpoint, data: data);
+      final response = await api.post(endpoint, data: data);
       if(response.statusCode == 200){
-        Map<String, dynamic> data = Map<String, dynamic>.from(response.data);
-        return UserModel.fromJson(data['data']);
+        Map<String, dynamic> responseData = Map<String, dynamic>.from(response.data);
+        return UserModel.fromJson(responseData['data']);
       }
       else{
         throw Exception('Failed to load user');
       }
     }
     catch(e){
+      print(e);
       if(e is DioError){
         int status = e.response?.statusCode ?? 401;
         if (status < 500) {
-          Map<String, dynamic> data = Map<String, dynamic>.from(e.response?.data);
-          throw AuthException(data['message']);
+          Map<String, dynamic> data = Map<String, dynamic>.from(e.response?.data ?? {});
+          throw AuthException(data['message'] ?? '');
         } else {
           rethrow;
         }

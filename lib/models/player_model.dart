@@ -1,19 +1,67 @@
+import 'package:mafiaclient/models/user_model.dart';
+
 enum PlayerRole {undefined, peaceful, mafia, don, host}
 
 class PlayerModel{
-  final int userId;
+  final UserModel user;
   bool isAlive;
+  bool isOnVote;
   PlayerRole role;
   bool isSpeakingTurn;
   bool isCheating;
   bool haveLastWord;
 
   PlayerModel({
-    required this.userId, 
+    required this.user, 
     this.isAlive = true, 
     this.role = PlayerRole.undefined, 
     this.isSpeakingTurn = false,
     this.isCheating = false,
+    this.isOnVote = false,
     this.haveLastWord = false
   });
+
+  Map<String, dynamic> toJson(){
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['user'] = user.toJson();
+    data['role'] = role.index;
+    data['isAlive'] = isAlive;
+    data['isSpeakingTurn'] = isSpeakingTurn;
+    data['isCheating'] = isCheating;
+    data['isOnVote'] = isOnVote;
+    data['haveLastWord'] = haveLastWord;
+    return data;
+    
+  }
+
+  factory PlayerModel.fromJson(Map<String, dynamic> json) {
+    return PlayerModel(
+      user: UserModel.fromJson(json["user"]),
+      role: PlayerRole.values[json["role"]],
+      isAlive: json["isAlive"],
+      isSpeakingTurn: json["isSpeakingTurn"],
+      isCheating: json["isCheating"],
+      isOnVote: json["isOnVote"],
+      haveLastWord: json["haveLastWord"],
+    );
+  }
+
+  bool isPeaceful(){
+    return role == PlayerRole.peaceful || role == PlayerRole.undefined;
+  }
+
+  bool isMafia(){
+    return role == PlayerRole.don || role == PlayerRole.mafia;
+  }
+
+  bool isHost(){
+    return role == PlayerRole.host;
+  }
+
+  bool isDon(){
+    return role == PlayerRole.don;
+  }
+
+
+
 }
