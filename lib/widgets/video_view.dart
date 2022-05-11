@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/controllers/game_controller.dart';
 import 'package:mafiaclient/models/player_model.dart';
 
 import '../controllers/webrtc_controller.dart';
@@ -9,6 +10,7 @@ class VideoView extends StatelessWidget {
   final int playerOrder;
   final PlayerModel playerModel;
   final WebRTCController webrtcController = Get.find();
+  final GameController game = Get.find();
 
 
   VideoView({Key? key, required this.playerModel, required this.playerOrder}) : super(key: key);
@@ -69,7 +71,9 @@ class VideoView extends StatelessWidget {
                 borderRadius: const BorderRadius.all(Radius.circular(40)),
               ),
               padding: const EdgeInsets.all(5),
-              child: Text('${playerModel.isHost() ? '' : '$playerOrder.'}${playerModel.user.username}', style: const TextStyle(
+              child: Text('${playerModel.isHost() ? '' : '$playerOrder.'}${playerModel.user.username} ${playerModel.user.id == game.myPlayer.value.user.id 
+                ? '(you)' : ''}', 
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w500
               ),),

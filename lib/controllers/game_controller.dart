@@ -21,6 +21,8 @@ class GameController extends GetxController{
 
   var playersList = <PlayerModel>[].obs;
 
+  var myPlayer = PlayerModel(user: UserModel.empty()).obs;
+
   GameSettings? gameSettings;
 
   var readyToDisplayGame = false.obs;
@@ -109,6 +111,7 @@ class GameController extends GetxController{
         hostId = gameData['hostId'] == 'none' ? null : gameData['hostId'];
         gameSettings = gameData['gameSettings'] == 'none' ? null : gameData['gameSettings'];
       }
+      myPlayer.value = getMyPlayer() ?? PlayerModel(user: UserModel.empty());
       readyToDisplayGame.value = true;
     }
   }

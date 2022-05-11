@@ -120,7 +120,6 @@ class WebRTCController extends GetxController{
 
   void _setUserByPeer(Map<String, dynamic> data) async {
     webrtcClients[data['peerID']]!.user = UserModel.fromJson(data['user']);
-    print('_setUserByPeer');
     update();
   }
 
