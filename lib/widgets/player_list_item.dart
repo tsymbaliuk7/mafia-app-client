@@ -10,6 +10,12 @@ class PlayerListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  Text('$order. ${player.user.username} ${isYou ? '(you)' : ''}');
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.grey))
+      ),
+      child: Text('$order. ${player.user.username} ${isYou ? '(you)' : ''}'),
+    );
   }
 }

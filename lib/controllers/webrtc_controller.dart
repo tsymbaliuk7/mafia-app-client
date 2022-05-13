@@ -351,6 +351,10 @@ class WebRTCController extends GetxController{
 
         webrtcClients[peer]?.isReadyToDisplay.value = false;
 
+        if(webrtcClients[peer]!.user!.id == game.getHost()?.user.id){
+          game.deleteHostData();
+        }
+
         game.deletePlayer(webrtcClients[peer]!.user!.id);
 
         webrtcClients.remove(peer);

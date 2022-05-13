@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/controllers/game_controller.dart';
 import 'package:mafiaclient/views/home_page.dart';
 
 import '../controllers/webrtc_controller.dart';
@@ -12,6 +14,7 @@ class BottomNavBar extends StatelessWidget {
   final void Function()? openDrawer;
 
   final WebRTCController webrtcController = Get.find();
+  final GameController game = Get.find();
 
  
   @override
@@ -31,6 +34,7 @@ class BottomNavBar extends StatelessWidget {
             width: size.width,
             height: 80,
             child: Obx((){
+              print(game.haveHost.value);
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25),
                 child: Row(
@@ -126,6 +130,56 @@ class BottomNavBar extends StatelessWidget {
                         ),
                       ],
                     ),
+
+                    game.gameStage.value == GameStage.lobby 
+                    ? game.haveHost.value 
+                      ? game.myPlayer.value.isHost() 
+                        ? Material(
+                            borderRadius: BorderRadius.circular(40),
+                            color: const Color.fromARGB(255, 231, 231, 231),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(40),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SvgPicture.asset(
+                                  'icons/crown.svg', 
+                                  color: Colors.grey,
+                                  width: 25,
+                                ),
+                              ),
+                              onTap: () {
+                                game.freeHostPlace(webrtcController.room);
+                              }
+                            ),
+                          )
+                        : Container(
+                            padding: const EdgeInsets.all(8.0),
+                            width: 25,
+                          )
+                      : Material(
+                          borderRadius: BorderRadius.circular(40),
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(40),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: SvgPicture.asset(
+                                'icons/crown.svg', 
+                                color: const Color.fromARGB(255, 240, 216, 5),
+                                width: 25,
+                              ),
+                            ),
+                            onTap: () {
+                              game.becomeAHost(webrtcController.room);
+                            }
+                          ),
+                        )
+                    : Container(
+                            padding: const EdgeInsets.all(8.0),
+                            width: 25,
+                          ),
+                    
+                    
                   ],
                 ),
               );

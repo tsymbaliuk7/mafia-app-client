@@ -18,13 +18,14 @@ class GameDrawer extends StatelessWidget {
         child: Obx(() {
           PlayerModel? host = game.getHost();
           Map<int, PlayerModel>? don, players, peaceful, mafia;
-          
+          print(game.myPlayer.value.isHost());
           if(game.myPlayer.value.isHost() || game.myPlayer.value.isMafia()){
             don = game.getDon();
-            peaceful= game.getDon();
+            peaceful= game.getPeaceful();
             mafia= game.getMafia();
           }
-          if(game.myPlayer.value.isPeaceful()){
+         
+          if(game.myPlayer.value.isPeaceful() || game.myPlayer.value.isHost()){
             players = game.getPlayersWithoutHost();
           }
           
@@ -62,7 +63,7 @@ class GameDrawer extends StatelessWidget {
                               ],
                             ),
                           ),
-                          Text('${host!.user.username} ${game.myPlayer.value.user.id == host.user.id ? 'you' : ''}')
+                          Text('${host!.user.username} ${game.myPlayer.value.user.id == host.user.id ? '(you)' : ''}')
                         ],
                       ),
                     )
@@ -190,7 +191,7 @@ class GameDrawer extends StatelessWidget {
                         )
                         : const SizedBox(),
 
-                          game.myPlayer.value.isPeaceful() && players != null
+                          (game.myPlayer.value.isPeaceful() || game.myPlayer.value.isHost()) && players != null
                         ? Padding(
                           padding: const EdgeInsets.only(top: 10),
                           child: Column(

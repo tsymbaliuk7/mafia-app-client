@@ -95,11 +95,10 @@ _showToast() {
                         return Obx(() {
                             if(widget.webrtcController.status.value == Status.success 
                               && widget.game.readyToDisplayGame.value){
-                                var itemList = <PlayerModel>[];
-                                itemList.addAll(widget.game.playersList.where((p0) => p0.role != PlayerRole.host));
+                              
                               
                               return GridView.builder(
-                                itemCount: itemList.length,
+                                itemCount: widget.game.playersList.length,
                                 gridDelegate: 
                                   SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: count,
@@ -109,7 +108,7 @@ _showToast() {
                                   ),
                                 itemBuilder: (context, index){
                                   return VideoView(
-                                    playerModel: itemList[index], 
+                                    playerModel: widget.game.playersList[index], 
                                     playerOrder: widget.game.haveHost.value ? index : index + 1,);
                                 }
                               );

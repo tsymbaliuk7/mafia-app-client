@@ -5,6 +5,7 @@ import '../models/game_settings.dart';
 import '../models/user_model.dart';
 import '../network/socket_service.dart';
 import 'auth_controller.dart';
+import 'webrtc_controller.dart';
 
 enum GameStage {lobby, start, inProgress, over}
 enum DayPeriod {none, day, night}
@@ -40,7 +41,55 @@ class GameController extends GetxController{
         receiveGameData(Map<String, dynamic>.from(data));
       });
     }
+    if(!SocketService().socket.hasListeners('receive-host-data')){
+      SocketService().socket.on('receive-host-data', (data){
+        receiveHostData(Map<String, dynamic>.from(data));
+      });
+    }
     super.onInit();
+  }
+
+  bool myPlayerIsReady(){
+    return myPlayer.value.user.id != 0;
+  }
+
+
+  void becomeAHost(String room){
+    if(!haveHost.value && myPlayerIsReady()){
+      SocketService().socket.emit('update-host-data', {
+        'haveHost': true,
+        'hostId': myPlayer.value.user.id,
+        'room': room,
+      });
+      haveHost(true);
+      hostId = myPlayer.value.user.id;
+      myPlayer.value.role = PlayerRole.host;
+      var newList = List<PlayerModel>.from([myPlayer.value, ...playersList
+        .where((element) => element.user.id != myPlayer.value.user.id)
+        .toList()]);
+      playersList(newList);
+    }
+  }
+
+  void freeHostPlace(String room){
+    if(haveHost.value && myPlayer.value.isHost()){
+      SocketService().socket.emit('update-host-data', {
+        'haveHost': false,
+        'hostId': null,
+        'room': room,
+      });
+      haveHost(false);
+      hostId = null;
+      myPlayer.value.role = PlayerRole.undefined;
+      var newList = List<PlayerModel>.from([...playersList
+        .where((element) => element.user.id != myPlayer.value.user.id)
+        .toList(), myPlayer.value]);
+      playersList(newList);
+    }
+  }
+
+  PlayerModel? getPlayerByUserId(int userId){
+    return playersList.firstWhereOrNull((p0) => p0.user.id == userId);
   }
 
   PlayerModel? getMyPlayer(){
@@ -117,6 +166,46 @@ class GameController extends GetxController{
   }
 
 
+  void deleteHostData(){
+    haveHost(false);
+    hostId = null;
+  }
+
+
+  void receiveHostData(Map<String, dynamic> data){
+    if(data['haveHost']){
+      haveHost(data['haveHost']);
+      hostId = data['hostId'];
+      var newHost = getPlayerByUserId(data['hostId']);
+      if(newHost != null){
+        newHost.role = PlayerRole.host;
+        var newList = List<PlayerModel>.from([newHost, ...playersList
+          .where((element) => element.user.id != newHost.user.id)
+          .toList()]);
+        playersList(newList);
+      }
+      else{
+        haveHost(false);
+        hostId = null;
+      }
+      
+    }
+    else{
+      haveHost(data['haveHost']);
+      hostId = null;
+      var formerHost = getHost();
+      if(formerHost != null){
+        formerHost.role = PlayerRole.undefined;
+        var newList = List<PlayerModel>.from([...playersList
+          .where((element) => element.user.id != formerHost.user.id)
+          .toList(), formerHost]);
+        playersList(newList);
+      }
+      
+    }
+  }
+
+
   void sendGameData(Map<String, dynamic> requestData){
     final Map<String, dynamic> data = <String, dynamic>{};
     data['players'] = playersList.map((element) => element.toJson()).toList();
@@ -146,6 +235,7 @@ class GameController extends GetxController{
   void onClose() {
     SocketService().socket.off('ask-for-game-data');
     SocketService().socket.off('receive-game-data');
+    SocketService().socket.off('receive-host-data');
     super.onClose();
   }
   

@@ -46,6 +46,27 @@ class PlayerModel{
     );
   }
 
+  PlayerModel copyWith({
+    UserModel? user,
+    PlayerRole? role,
+    bool? isAlive,
+    bool? isSpeakingTurn,
+    bool? isCheating,
+    bool? isOnVote,
+    bool? haveLastWord,
+  }){
+    return PlayerModel(
+      user: user ?? this.user,
+      role: role ?? this.role,
+      isAlive: isAlive ?? this.isAlive,
+      isSpeakingTurn: isSpeakingTurn ?? this.isSpeakingTurn,
+      isCheating: isCheating ?? this.isCheating,
+      isOnVote: isOnVote ?? this.isOnVote,
+      haveLastWord: haveLastWord ?? this.haveLastWord,
+    );
+  }
+  
+
   bool isPeaceful(){
     return role == PlayerRole.peaceful || role == PlayerRole.undefined;
   }
