@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/cofig/styles.dart';
 import 'package:mafiaclient/controllers/game_controller.dart';
 import 'package:mafiaclient/controllers/rooms_controller.dart';
 import 'package:mafiaclient/controllers/webrtc_controller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mafiaclient/models/player_model.dart';
 import 'package:mafiaclient/widgets/game_drawer.dart';
 
 import '../widgets/bottom_nav_bar.dart';
@@ -81,50 +81,55 @@ _showToast() {
       },
       child: Scaffold(
         key: _key,
-        drawer: GameDrawer(),
+        drawer: GameDrawer(room: widget.webrtcController.room,),
         body: SafeArea(
           child: Stack(
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 50),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: LayoutBuilder(builder: (context, constraints) {
-                        int count = constraints.maxWidth >= 900 ? 4 : 2;
-                        return Obx(() {
-                            if(widget.webrtcController.status.value == Status.success 
-                              && widget.game.readyToDisplayGame.value){
-                              
-                              
-                              return GridView.builder(
-                                itemCount: widget.game.playersList.length,
-                                gridDelegate: 
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: count,
-                                    mainAxisSpacing: 10,
-                                    crossAxisSpacing: 10,
-                                    childAspectRatio: 1.2
-                                  ),
-                                itemBuilder: (context, index){
-                                  return VideoView(
-                                    playerModel: widget.game.playersList[index], 
-                                    playerOrder: widget.game.haveHost.value ? index : index + 1,);
+              Obx(() {
+                  return AnimatedContainer(
+                    color: backgroundColors[widget.game.getCurrentStyleName()],
+                    duration: const Duration(milliseconds: 300),
+                    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 50),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: LayoutBuilder(builder: (context, constraints) {
+                            int count = constraints.maxWidth >= 900 ? 4 : 2;
+                            return Obx(() {
+                                if(widget.webrtcController.status.value == Status.success 
+                                  && widget.game.readyToDisplayGame.value){
+                                  
+                                  
+                                  return GridView.builder(
+                                    itemCount: widget.game.playersList.length,
+                                    gridDelegate: 
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: count,
+                                        mainAxisSpacing: 10,
+                                        crossAxisSpacing: 10,
+                                        childAspectRatio: 1.2
+                                      ),
+                                    itemBuilder: (context, index){
+                                      return VideoView(
+                                        playerModel: widget.game.playersList[index], 
+                                        playerOrder: widget.game.haveHost.value ? index : index + 1,);
+                                    }
+                                  );
                                 }
-                              );
-                            }
-                            else if(widget.webrtcController.status.value == Status.failure){
-                              return const Center(child: Text('Ooops\nCammera access denied', textAlign: TextAlign.center,),);
-                            }
-                            else{
-                              return const Center(child: CircularProgressIndicator(),);
-                            }
-                          }
-                        );
-                      },) 
-                    )
-                  ],
-                ),
+                                else if(widget.webrtcController.status.value == Status.failure){
+                                  return const Center(child: Text('Ooops\nCammera access denied', textAlign: TextAlign.center,),);
+                                }
+                                else{
+                                  return const Center(child: CircularProgressIndicator(color: Colors.white,),);
+                                }
+                              }
+                            );
+                          },) 
+                        )
+                      ],
+                    ),
+                  );
+                }
               ),
               Obx(() {
                 if(widget.webrtcController.status.value == Status.success
@@ -161,7 +166,11 @@ _showToast() {
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: Text(widget.webrtcController.room),
+                                  child: Text(
+                                    widget.game.gameStage.value == GameStage.lobby 
+                                    ? widget.webrtcController.room 
+                                    : '${widget.game.isNight() ? 'Night' : 'Day'} ${widget.game.gameCycleCount}',
+                                  ),
                                 )
                               ),
                             ),

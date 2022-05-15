@@ -6,8 +6,9 @@ import 'package:mafiaclient/models/player_model.dart';
 import 'package:mafiaclient/widgets/player_list_item.dart';
 
 class GameDrawer extends StatelessWidget {
-  GameDrawer({Key? key}) : super(key: key);
-
+  GameDrawer({Key? key, required this.room}) : super(key: key);
+  
+  final String room;
   final GameController game = Get.put(GameController());
 
   @override
@@ -18,7 +19,6 @@ class GameDrawer extends StatelessWidget {
         child: Obx(() {
           PlayerModel? host = game.getHost();
           Map<int, PlayerModel>? don, players, peaceful, mafia;
-          print(game.myPlayer.value.isHost());
           if(game.myPlayer.value.isHost() || game.myPlayer.value.isMafia()){
             don = game.getDon();
             peaceful= game.getPeaceful();
@@ -31,6 +31,7 @@ class GameDrawer extends StatelessWidget {
           
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 children: [
@@ -191,7 +192,8 @@ class GameDrawer extends StatelessWidget {
                         )
                         : const SizedBox(),
 
-                          (game.myPlayer.value.isPeaceful() || game.myPlayer.value.isHost()) && players != null
+                          (game.myPlayer.value.isPeaceful() || (game.myPlayer.value.isHost() && game.gameStage.value == GameStage.lobby)) 
+                          && players != null
                         ? Padding(
                           padding: const EdgeInsets.only(top: 10),
                           child: Column(
@@ -233,6 +235,52 @@ class GameDrawer extends StatelessWidget {
                       ],
                     ),
                     
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  game.myPlayer.value.isHost() &&  game.gameStage.value == GameStage.lobby
+                  ? Material(
+                    borderRadius: BorderRadius.circular(40),
+                    color: const Color.fromARGB(255, 231, 231, 231),
+                    child: InkWell( 
+                      borderRadius: BorderRadius.circular(40),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.shuffle,
+                          color:Colors.grey,
+                          size: 25,
+                        ),
+                      ),
+                      onTap: () {
+                        game.shufflePlayers(room);
+                      }
+                    ),
+                  )
+                  : const SizedBox(),
+
+                  game.myPlayer.value.isHost() && game.gameStage.value == GameStage.start
+                  ? Material(
+                    borderRadius: BorderRadius.circular(40),
+                    color: const Color.fromARGB(255, 231, 231, 231),
+                    child: InkWell( 
+                      borderRadius: BorderRadius.circular(40),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.refresh,
+                          color:Colors.grey,
+                          size: 25,
+                        ),
+                      ),
+                      onTap: () {
+                        game.reGenerateRoles();
+                      }
+                    ),
+                  )
+                  : const SizedBox()
                 ],
               )
             ],

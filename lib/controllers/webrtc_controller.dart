@@ -213,22 +213,6 @@ class WebRTCController extends GetxController{
 
 
   void registerPeerConnectionListeners(String name) {
-    // webrtcClients[name]?.connection?.onIceGatheringState = (RTCIceGatheringState state) {
-    //   print('ICE gathering state changed: $state');
-    // };
-
-    // webrtcClients[name]?.connection?.onConnectionState = (RTCPeerConnectionState state) {
-    //   print('Connection state change: $state');
-    // };
-
-    // webrtcClients[name]?.connection?.onSignalingState = (RTCSignalingState state) {
-    //   print('Signaling state change: $state');
-    // };
-
-    // webrtcClients[name]?.connection?.onIceGatheringState = (RTCIceGatheringState state) {
-    //   print('ICE connection state change: $state');
-    // };
-
     webrtcClients[name]?.connection?.onAddStream = (MediaStream stream) {
       
       webrtcClients[name]!.videoRenderer = webrtc.RTCVideoRenderer();
@@ -238,7 +222,6 @@ class WebRTCController extends GetxController{
       webrtcClients[name]!.isReadyToDisplay.value = true;
       
       webrtcClients.refresh();
-
 
     };
   }

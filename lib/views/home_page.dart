@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mafiaclient/globals.dart';
 import 'package:mafiaclient/views/account_page.dart';
 
+import '../cofig/styles.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/rooms_controller.dart';
 import '../widgets/elipsis_buttons.dart';

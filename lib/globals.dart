@@ -17,18 +17,17 @@ List<String> STUN =[
   "stun:stun.voxgratia.org"
 ];
 
-const gradientColors = [Color(0xFF6957FE), Color(0xFF7B98FF)];
 
-  Map<String, dynamic> configuration = {
-    'iceServers': [
-      {
-        'urls': ["stun:stun1.l.google.com:19302", 'stun:stun.l.google.com:19302']
-      },
-      {
-        'url': 'turn:turn.anyfirewall.com:443?transport=tcp',
-        'credential': 'webrtc',
-        'username': 'webrtc'
-      }
-      
-    ]
-  };
+Map<String, dynamic> configuration = {
+  'iceServers': [
+    {
+      'urls': ["stun:stun1.l.google.com:19302", 'stun:stun.l.google.com:19302']
+    },
+    {
+      'url': 'turn:turn.anyfirewall.com:443?transport=tcp',
+      'credential': 'webrtc',
+      'username': 'webrtc'
+    }
+    
+  ]
+};

@@ -61,6 +61,7 @@ flutter:
     - assets/icons/tie.svg
     - assets/icons/peace.svg
     - assets/icons/player.svg
+    - assets/icons/shuffle.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

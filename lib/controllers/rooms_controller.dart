@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/cofig/styles.dart';
 import 'package:mafiaclient/views/room.dart';
 import 'package:uuid/uuid.dart';
 
-import '../globals.dart';
 import '../network/socket_service.dart';
 import 'auth_controller.dart';
 

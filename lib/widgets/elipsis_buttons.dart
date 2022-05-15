@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mafiaclient/cofig/styles.dart';
 
-import '../globals.dart';
 
 class ElipsisPrimaryButton extends StatelessWidget{
   final Function()? onTap;

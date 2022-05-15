@@ -319,8 +319,7 @@ class _SignUpPagePageState extends State<SignUpPage> {
                                             .visibility
                                         : Icons
                                             .visibility_off,
-                                    color: Color(
-                                        0xff7C7C7C),
+                                    color: const Color(0xff7C7C7C),
                                   ),
                                 ),
                               ),

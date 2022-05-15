@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mafiaclient/globals.dart';
+import 'package:mafiaclient/cofig/styles.dart';
 
 class PrimaryButton extends StatelessWidget {
   final Function()? onTap;

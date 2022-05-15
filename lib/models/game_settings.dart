@@ -11,6 +11,14 @@ class GameSettings{
     data['mafiaCount'] = mafiaCount;
     data['lastWordForKilled'] = lastWordForKilled;
     return data;
-    
   }
+
+  factory GameSettings.fromJson(Map<String, dynamic> json){
+    return GameSettings(
+      mafiaCount: json['mafiaCount'],
+      withAI: json['withAI'],
+      lastWordForKilled: json['lastWordForKilled'],
+    );
+  }
+
 }

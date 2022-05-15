@@ -42,7 +42,6 @@ class AuthController extends GetxController{
       }
     }
     catch(_){
-      print(_);
       ApiService().deleteToken();
       user.value = UserModel.empty();
       authStatus.value = AuthStatus.unauthenticated;

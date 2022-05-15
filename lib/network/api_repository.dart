@@ -102,7 +102,6 @@ class ApiRepository{
       }
     }
     catch(e){
-      print(e);
       if(e is DioError){
         int status = e.response?.statusCode ?? 401;
         if (status < 500) {
