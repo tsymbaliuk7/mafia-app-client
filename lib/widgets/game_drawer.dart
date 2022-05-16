@@ -255,7 +255,7 @@ class GameDrawer extends StatelessWidget {
                         ),
                       ),
                       onTap: () {
-                        game.shufflePlayers(room);
+                        game.shufflePlayers();
                       }
                     ),
                   )

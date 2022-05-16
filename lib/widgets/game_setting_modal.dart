@@ -146,7 +146,6 @@ class _GameSettingsModalState extends State<GameSettingsModal> {
                   onTap: (){
                     Get.back();
                     widget.game.saveSettingAndStartGame(
-                      widget.room, 
                       useAI, 
                       lastWordForKilled, 
                       mafiaCount

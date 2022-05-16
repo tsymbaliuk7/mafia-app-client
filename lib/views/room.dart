@@ -33,6 +33,7 @@ class _RoomPageState extends State<RoomPage> {
 
   @override
   void initState() {
+    widget.game.setRoomId(widget.id);
     widget.webrtcController.startCapturing(widget.id);
     super.initState();
     fToast = FToast();

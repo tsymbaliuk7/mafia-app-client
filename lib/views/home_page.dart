@@ -8,8 +8,9 @@ import '../controllers/rooms_controller.dart';
 import '../widgets/elipsis_buttons.dart';
 
 class HomePage extends StatelessWidget {
-  HomePage({Key? key}) : super(key: key);
+  HomePage({Key? key, this.removedFromRoom = false}) : super(key: key);
   
+  final bool removedFromRoom;
   final RoomsController roomsController = Get.put(RoomsController());
   final AuthController authController = Get.find();
 
@@ -22,6 +23,23 @@ class HomePage extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.only(top: 30, left: 25, right: 25),
             child: Obx((){
+              if(removedFromRoom){
+                Get.defaultDialog(
+                  title: "Error",
+                  backgroundColor: Colors.white,
+                  titleStyle: TextStyle(color: gradientColors[0], fontSize: 18, fontWeight: FontWeight.w600),
+                  middleTextStyle: const TextStyle(color: Colors.black),
+                  textConfirm: "OK",
+                  confirmTextColor: Colors.white,
+                  buttonColor: gradientColors[0],
+                  barrierDismissible: true,
+                  onConfirm: (){
+                    Get.back();
+                  },
+                  radius: 50,
+                  content: const Text('Game is already in progress. Wait for the players to finish current session and join room again')
+                );
+              }
               if(roomsController.roomStatus.value == Status.success){
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.center,

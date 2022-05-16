@@ -115,7 +115,7 @@ class BottomNavBar extends StatelessWidget {
                                     child: InkWell(
                                       borderRadius: BorderRadius.circular(40),
                                       onTap: (){
-                                        game.openGameSettingsModal(webrtcController.room);
+                                        game.openGameSettingsModal();
                                       },
                                       child: const SizedBox(
                                         width: 50,
@@ -141,7 +141,9 @@ class BottomNavBar extends StatelessWidget {
           }
         ),
         Obx(() {
+            print(game.myPlayer.value.isHost());
             print(game.gameStage.value);
+            print(game.myPlayer.value.isHost() && game.gameStage.value == GameStage.start);
             return game.myPlayer.value.isHost() && game.gameStage.value == GameStage.start
             ? SizedBox(
               width: size.width,
@@ -189,9 +191,10 @@ class BottomNavBar extends StatelessWidget {
                                         ),
                                       ],
                                     ),
-                                    child: const Center(
+                                    child: Center(
                                       child: Icon(
-                                        Icons.handshake_rounded,
+                                        !game.playersRolesSend.value ? 
+                                          Icons.handshake_rounded : Icons.light_mode_rounded,
                                         color: Colors.white,
                                       )
                                     ),
@@ -201,8 +204,13 @@ class BottomNavBar extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(40),
                                     child: InkWell(
                                       borderRadius: BorderRadius.circular(40),
-                                      onTap: (){
-                                        game.sendRoles(webrtcController.room);
+                                      onTap: () async {
+                                        if(!game.playersRolesSend.value){
+                                          game.sendRoles();
+                                        }
+                                        else{
+                                          await game.startFirstDay();
+                                        }
                                       },
                                       child: const SizedBox(
                                         width: 50,
@@ -373,7 +381,7 @@ class BottomNavBar extends StatelessWidget {
                                                   ),
                                                 ),
                                                 onTap: () {
-                                                  game.freeHostPlace(webrtcController.room);
+                                                  game.freeHostPlace();
                                                 }
                                               ),
                                             )
@@ -392,7 +400,7 @@ class BottomNavBar extends StatelessWidget {
                                                 ),
                                               ),
                                               onTap: () {
-                                                game.becomeAHost(webrtcController.room);
+                                                game.becomeAHost();
                                               }
                                             ),
                                           )

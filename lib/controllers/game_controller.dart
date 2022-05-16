@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mafiaclient/cofig/styles.dart';
 import 'package:mafiaclient/models/player_model.dart';
+import 'package:mafiaclient/views/home_page.dart';
 import 'package:mafiaclient/widgets/game_setting_modal.dart';
 import 'package:mafiaclient/widgets/role_modal.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 import '../models/game_settings.dart';
 import '../models/user_model.dart';
@@ -20,6 +25,8 @@ class GameController extends GetxController{
   var currentDayPeriod = DayPeriod.none.obs;
   var gameCycleCount = 0.obs;
 
+  var playersRolesSend = false.obs;
+
   var haveHost = false.obs;
   int? hostId;
 
@@ -33,6 +40,9 @@ class GameController extends GetxController{
 
   var readyToDisplayGame = false.obs;
   bool needToReceiveGameData = true;
+
+  String? room;
+
 
   @override
   void onInit() {
@@ -88,14 +98,19 @@ class GameController extends GetxController{
     }
   }
 
+  void setRoomId(String roomId){
+    room = roomId;
+  }
 
-  void becomeAHost(String room){
+
+  void becomeAHost(){
     if(!haveHost.value && myPlayerIsReady()){
       SocketService().socket.emit('update-host-data', {
         'haveHost': true,
         'hostId': myPlayer.value.user.id,
         'room': room,
       });
+      
       haveHost(true);
       hostId = myPlayer.value.user.id;
       myPlayer.value.role = PlayerRole.host;
@@ -103,10 +118,11 @@ class GameController extends GetxController{
         .where((element) => element.user.id != myPlayer.value.user.id)
         .toList()]);
       playersList(newList);
+      myPlayer(getMyPlayer());
     }
   }
 
-  void freeHostPlace(String room){
+  void freeHostPlace(){
     if(haveHost.value && myPlayer.value.isHost()){
       SocketService().socket.emit('update-host-data', {
         'haveHost': false,
@@ -186,8 +202,15 @@ class GameController extends GetxController{
       else{
         playersList.value = List.from(gameData['players']).map((e) => PlayerModel.fromJson(e)).toList();
         if(playersList.where((p0) => p0.user.id == authController.user.value.id).isEmpty){
-          playersList.add(PlayerModel(user: authController.user.value));
+          if(GameStage.values[gameData['stage']] == GameStage.lobby){
+            playersList.add(PlayerModel(user: authController.user.value));
+          }
+          else{
+            Get.offAll(() => HomePage());
+          }
+          
         }
+        playersRolesSend.value = gameData['playersRolesSend'];
         gameStage.value = GameStage.values[gameData['stage']];
         currentDayPeriod.value = DayPeriod.values[gameData['day_period']];
         gameCycleCount.value = gameData['gameCycleCount'];
@@ -243,7 +266,7 @@ class GameController extends GetxController{
   }
 
   
-  void shufflePlayers(String room){
+  void shufflePlayers(){
     var host = getHost();
     var newList = List<PlayerModel>.from([host, ...playersList
       .where((element) => element.user.id != host?.user.id)
@@ -256,6 +279,7 @@ class GameController extends GetxController{
     data['room'] = room;
     SocketService().socket.emit('send-players-list', data);
     playersList(newList);
+    myPlayer(getMyPlayer());
   }
 
   void receivePlayersList(Map<String, dynamic> data){
@@ -315,6 +339,7 @@ class GameController extends GetxController{
 
   Map<String, dynamic> gameDataToMap(){
     final Map<String, dynamic> data = <String, dynamic>{};
+    data['playersRolesSend'] = playersRolesSend.value;
     data['players'] = playersList.map((element) => element.toJson()).toList();
     data['stage'] = gameStage.value.index;
     data['day_period'] = currentDayPeriod.value.index;
@@ -340,7 +365,10 @@ class GameController extends GetxController{
     UserModel user = UserModel.fromJson(requestData['user']);
     
     if(playersList.where((p0) => p0.user.id == user.id).isEmpty){
-      playersList.add(PlayerModel(user: user));
+      if(gameStage.value == GameStage.lobby){
+        playersList.add(PlayerModel(user: user));
+      }
+      
     }
 
   }
@@ -354,16 +382,19 @@ class GameController extends GetxController{
     haveHost.value = gameData['haveHost'];
     hostId = gameData['hostId'] == 'none' ? null : gameData['hostId'];
     gameSettings = gameData['gameSettings'] == 'none' ? null : GameSettings.fromJson(gameData['gameSettings']);
-      
+    playersRolesSend.value = gameData['playersRolesSend'];
+
     myPlayer.value = getMyPlayer() ?? PlayerModel(user: UserModel.empty());
 
   }
 
   void deletePlayer(int userId){
-    playersList.value = playersList.where((element) => element.user.id != userId).toList();
+    if(gameStage.value == GameStage.lobby){
+      playersList.value = playersList.where((element) => element.user.id != userId).toList();
+    }  
   }
 
-  void openGameSettingsModal(String room){
+  void openGameSettingsModal(){
     Get.defaultDialog(
       title: "Game Settings",
       backgroundColor: Colors.white,
@@ -372,11 +403,11 @@ class GameController extends GetxController{
       buttonColor: gradientColors[0],
       barrierDismissible: true,
       radius: 25,
-      content: GameSettingsModal(room: room,)
+      content: GameSettingsModal(room: room!,)
     );
   }
 
-  void saveSettingAndStartGame(String room, bool withAI, bool killedLastWord, int mafiaCount){
+  void saveSettingAndStartGame(bool withAI, bool killedLastWord, int mafiaCount){
     gameSettings = GameSettings(mafiaCount: mafiaCount, withAI: withAI, lastWordForKilled: killedLastWord);
     gameStage(GameStage.start);
     currentDayPeriod(DayPeriod.night);
@@ -388,6 +419,7 @@ class GameController extends GetxController{
 
     generateRoles();
   }
+
 
   
 
@@ -402,12 +434,49 @@ class GameController extends GetxController{
     
   }
 
-  void sendRoles(String room){
+  void sendRoles(){
     final Map<String, dynamic> data = <String, dynamic>{};
     data['players'] = playersList.map((element) => element.toJson()).toList();
     data['withRoleNotification'] = true;
     data['room'] = room;
     SocketService().socket.emit('send-players-list', data);
+    playersRolesSend(true);
+  }
+
+
+  Future<void> startFirstDay() async {
+    gameStage(GameStage.inProgress);
+    currentDayPeriod(DayPeriod.day);
+    gameCycleCount(gameCycleCount.value + 1);
+
+    final Map<String, dynamic> data = {
+      'game_data': gameDataToMap(),
+      'room': room!
+    };
+    SocketService().socket.emit('send-start-game', data);
+
+    await makeCheckpoint();
+    
+  }
+
+
+  Future<void> makeCheckpoint() async {
+    final Map<String, dynamic> data = {};
+    data['game_data'] = gameDataToMap();
+    data['room'] = room!;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('checkpoint', json.encode(data));
+  }
+
+  Future<void> loadCheckPoint() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? srt = prefs.getString('checkpoint');
+    if(srt != null){
+      Map<String, dynamic> data = Map.from(json.decode(srt));
+      if(data['room'] == room){
+        getStartGameData(data['game_data']);
+      }
+    }
   }
 
 

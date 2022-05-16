@@ -13,5 +13,5 @@ const Map<String, Color> backgroundColors = {
   'day': Color.fromARGB(255, 187, 189, 255),
   'night': Color.fromARGB(255, 24, 25, 41),
   'evening': Color.fromRGBO(200, 92, 142, 0.81),
-  'morning': Color.fromRGBO(251, 195, 169, 0.81),
+  'morning': Color.fromRGBO(245, 225, 218, 0.81),
 };
