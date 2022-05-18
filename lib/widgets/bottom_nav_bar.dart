@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:mafiaclient/controllers/game_controller.dart';
-import 'package:mafiaclient/globals.dart';
+import 'package:mafiaclient/controllers/game_controller.dart' as g;
 import 'package:mafiaclient/views/home_page.dart';
+import 'package:mafiaclient/widgets/voting_player_button.dart';
 
 import '../controllers/webrtc_controller.dart';
 
@@ -14,7 +14,7 @@ class BottomNavBar extends StatelessWidget {
   final void Function()? openDrawer;
 
   final WebRTCController webrtcController = Get.find();
-  final GameController game = Get.find();
+  final g.GameController game = Get.find();
 
  
   @override
@@ -24,7 +24,7 @@ class BottomNavBar extends StatelessWidget {
       children: [
         Obx(() {
             int playerCount = game.getPlayersWithoutHost()?.length ?? 0;
-            return game.myPlayer.value.isHost() && game.gameStage.value == GameStage.lobby
+            return game.myPlayer.value.isHost() && game.gameStage.value == g.GameStage.lobby
             ? SizedBox(
               width: size.width,
               child: Row(
@@ -141,10 +141,10 @@ class BottomNavBar extends StatelessWidget {
           }
         ),
         Obx(() {
-            print(game.myPlayer.value.isHost());
-            print(game.gameStage.value);
-            print(game.myPlayer.value.isHost() && game.gameStage.value == GameStage.start);
-            return game.myPlayer.value.isHost() && game.gameStage.value == GameStage.start
+            game.myPlayer.value.isHost();
+            game.gameStage.value;
+            game.myPlayer.value.isHost() && game.gameStage.value == g.GameStage.start;
+            return game.myPlayer.value.isHost() && game.gameStage.value == g.GameStage.start
             ? SizedBox(
               width: size.width,
               child: Row(
@@ -230,6 +230,253 @@ class BottomNavBar extends StatelessWidget {
                       ],
                     ),
                   )
+                ],
+              ),
+            ) : SizedBox(height: 80, width: size.width,);
+          }
+        ),
+        Obx(() {
+            game.myPlayer.value.isHost();
+            game.gameStage.value;
+            game.myPlayer.value.isHost() && game.gameStage.value == g.GameStage.inProgress;
+            var nextSpeaker = game.getNextSpeaker();
+            return game.myPlayer.value.isHost() && game.gameStage.value == g.GameStage.inProgress && !game.haveSpeakers()
+            ? SizedBox(
+              width: size.width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 230,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: const BorderRadius.all(Radius.elliptical(230, 150)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 0),
+                        ),
+                      ]
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          nextSpeaker != null ? Stack(
+                            children: [
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color:const Color.fromARGB(255, 218, 0, 242),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    nextSpeaker.keys.first.toString(), 
+                                    style: const TextStyle(
+                                      color: Colors.white, 
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 30
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(40),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(40),
+                                  onTap: (){
+                                    game.startSpeach(nextSpeaker.values.first.user.id);
+                                  },
+                                  child: const SizedBox(
+                                    width: 50,
+                                    height: 50,
+                                  ),
+                                ),
+                              )
+                            ],
+                          ) : game.onVote.isEmpty ? Stack(
+                            children: [
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color:const Color.fromARGB(255, 218, 0, 242),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    game.currentDayPeriod.value == g.DayPeriod.night 
+                                      ? Icons.light_mode_rounded 
+                                      : Icons.dark_mode_rounded,
+                                    color: Colors.white,
+                                  )
+                                ),
+                              ),
+                              Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(40),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(40),
+                                  onTap: () async {
+                                    game.changePeriod();
+                                  },
+                                  child: const SizedBox(
+                                    width: 50,
+                                    height: 50,
+                                  ),
+                                ),
+                              )
+                            ],
+                          ) 
+                          : Stack(
+                            children: [
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color:const Color.fromARGB(255, 218, 0, 242),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.task_alt_outlined,
+                                    color: Colors.white,
+                                  )
+                                ),
+                              ),
+                              Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(40),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(40),
+                                  onTap: (){
+                                    
+                                  },
+                                  child: const SizedBox(
+                                    width: 50,
+                                    height: 50,
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                          
+                          
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ) : SizedBox(height: 80, width: size.width,);
+          }
+        ),
+       
+        Obx(() {
+          var playersNotInVote = game.getPlayersNotOnVote();
+          return game.myPlayer.value.isHost() && game.haveSpeakers() || game.myPlayer.value.isSpeakingTurn
+            ? SizedBox(
+              width: size.width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 150,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 0),
+                        ),
+                      ]
+                    ),
+                    child: playersNotInVote != null ? 
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ...playersNotInVote.entries.map((e) => Padding(
+                          padding: const EdgeInsets.only(right: 2),
+                          child: VotingPlayerButton(
+                            orderId: e.key, 
+                            onTap: (){
+                              game.setOnVote(id: e.value.user.id);    
+                          }),
+                        )),
+                        Stack(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color:const Color.fromARGB(255, 218, 0, 242),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.block_outlined,
+                                  color: Colors.white,
+                                )
+                              ),
+                            ),
+                            Material(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(40),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(40),
+                                onTap: () async {
+                                  game.setOnVote(); 
+                                },
+                                child: const SizedBox(
+                                  width: 50,
+                                  height: 50,
+                                ),
+                              ),
+                            )
+                          ]
+                        )
+                      ],
+                    ) : const SizedBox(),
+                  ),
+ 
                 ],
               ),
             ) : SizedBox(height: 80, width: size.width,);
@@ -364,7 +611,7 @@ class BottomNavBar extends StatelessWidget {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    game.gameStage.value == GameStage.lobby 
+                                    game.gameStage.value == g.GameStage.lobby 
                                       ? game.haveHost.value 
                                         ? game.myPlayer.value.isHost() 
                                           ? Material(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/cofig/styles.dart';
 import 'package:mafiaclient/controllers/game_controller.dart';
 import 'package:mafiaclient/models/player_model.dart';
 
@@ -27,7 +28,8 @@ class VideoView extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 5),
             decoration: BoxDecoration(
               color: playerModel.isHost() ?const Color.fromARGB(255, 244, 212, 30).withOpacity(0.25) :Colors.black.withOpacity(0.25),
-              borderRadius: BorderRadius.circular(25)
+              borderRadius: BorderRadius.circular(25),
+              border: playerModel.isSpeakingTurn ? Border.all(color: gradientColors[0], width: 2) : null,
             ),
             child: webrtcUser.isMutedVideo.value || webrtcUser.videoRenderer == null
             ?  Center(
@@ -95,6 +97,22 @@ class VideoView extends StatelessWidget {
                 size: 20,
                 color: Colors.white.withOpacity(0.6),
               ),
+            )
+          )
+          : const SizedBox(),
+
+
+          playerModel.isOnVote ? Positioned(
+            right: 5,
+            top: 20,
+            child: Container(
+              width: 10,
+              height: 10,
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 218, 0, 242),
+                borderRadius: BorderRadius.all(Radius.circular(40)),
+              ),
+              
             )
           )
           : const SizedBox(),

@@ -280,6 +280,52 @@ class GameDrawer extends StatelessWidget {
                       }
                     ),
                   )
+                  : const SizedBox(),
+
+                  game.myPlayer.value.isHost() && game.gameStage.value == GameStage.inProgress
+                  ? Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: Material(
+                          borderRadius: BorderRadius.circular(40),
+                          color: const Color.fromARGB(255, 231, 231, 231),
+                          child: InkWell( 
+                            borderRadius: BorderRadius.circular(40),
+                            child: const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Icon(
+                                Icons.replay_outlined,
+                                color:Colors.red,
+                                size: 25,
+                              ),
+                            ),
+                            onTap: () {
+                              game.restartGame();
+                            }
+                          ),
+                        ),
+                      ),
+                      Material(
+                        borderRadius: BorderRadius.circular(40),
+                        color: const Color.fromARGB(255, 231, 231, 231),
+                        child: InkWell( 
+                          borderRadius: BorderRadius.circular(40),
+                          child: const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Icon(
+                              Icons.arrow_back_rounded,
+                              color:Colors.red,
+                              size: 25,
+                            ),
+                          ),
+                          onTap: () async {
+                            await game.returnToCheckpoint();
+                          }
+                        ),
+                      ),
+                    ],
+                  )
                   : const SizedBox()
                 ],
               )

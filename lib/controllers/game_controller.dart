@@ -38,6 +38,9 @@ class GameController extends GetxController{
 
   GameSettings? gameSettings;
 
+  var speakingOrder = <int, bool>{}.obs;
+  var onVote = <int>[].obs;
+
   var readyToDisplayGame = false.obs;
   bool needToReceiveGameData = true;
 
@@ -100,6 +103,44 @@ class GameController extends GetxController{
 
   void setRoomId(String roomId){
     room = roomId;
+  }
+
+  void restartGame(){
+    gameStage(GameStage.lobby);
+    gameCycleCount(0);
+    currentDayPeriod(DayPeriod.none);
+    playersRolesSend(false);
+    haveHost(true);
+    gameSettings = null;
+    speakingOrder(<int, bool>{});
+    onVote([]);
+
+    playersList(playersList
+      .map((element) => element.role != PlayerRole.host ? element.copyWith(role: PlayerRole.undefined) : element)
+      .toList());
+    
+    final Map<String, dynamic> data = {
+      'game_data': gameDataToMap(),
+      'room': room
+    };
+    SocketService().socket.emit('send-start-game', data);
+  }
+
+  void changePeriod() async {
+    if(currentDayPeriod.value == DayPeriod.night){
+      currentDayPeriod(DayPeriod.day);
+      gameCycleCount(gameCycleCount.value + 1);
+      await makeCheckpoint();
+    }
+    else{
+      currentDayPeriod(DayPeriod.night);
+      playersList(playersList.map((p0) => p0.copyWith(isOnVote: false)).toList());
+    }
+    final Map<String, dynamic> data = {
+      'game_data': gameDataToMap(),
+      'room': room
+    };
+    SocketService().socket.emit('send-start-game', data);
   }
 
 
@@ -172,6 +213,19 @@ class GameController extends GetxController{
   }
 
 
+  Map<int, PlayerModel>? getPlayersNotOnVote(){
+    Map<int, PlayerModel> result = {};
+    playersList.asMap().forEach((key, value) {
+      if(!value.isOnVote && !value.isHost()){
+        result[key] = value;
+      }
+    });
+    return result.isEmpty ? null : result;
+  }
+
+  
+
+
    Map<int, PlayerModel>? getPlayersWithoutHost(){
     Map<int, PlayerModel> result = {};
     playersList.asMap().forEach((key, value) {
@@ -192,6 +246,27 @@ class GameController extends GetxController{
     return result.isEmpty ? null : result;
   }
 
+  Map<int, PlayerModel>? getPlayerByUserIdWithOrder(int userId){
+    Map<int, PlayerModel>? result;
+    playersList.asMap().forEach((key, value) {
+      if(value.user.id == userId){
+        result = {key: value};
+      }
+    });
+    return result;
+  }
+
+  Map<int, PlayerModel>? getNextSpeaker(){
+    int? userId = speakingOrder
+      .keys
+      .toList()
+      .firstWhereOrNull((element) => speakingOrder[element] == false);
+    if(userId == null){
+      return null;
+    }
+    return getPlayerByUserIdWithOrder(userId);
+  }
+
   void receiveGameData(Map<String, dynamic> data){
     if(needToReceiveGameData){
       needToReceiveGameData = false;
@@ -210,13 +285,20 @@ class GameController extends GetxController{
           }
           
         }
+        Map<int, bool> order = {};
+        Map<String, dynamic>.from(gameData['speakingOrder']).forEach((key, value) {
+          order.addAll({int.parse(key): value});
+        });
+
         playersRolesSend.value = gameData['playersRolesSend'];
         gameStage.value = GameStage.values[gameData['stage']];
         currentDayPeriod.value = DayPeriod.values[gameData['day_period']];
         gameCycleCount.value = gameData['gameCycleCount'];
         haveHost.value = gameData['haveHost'];
+        speakingOrder(order);
+        onVote(List<int>.from(gameData['onVote']));
         hostId = gameData['hostId'] == 'none' ? null : gameData['hostId'];
-        gameSettings = gameData['gameSettings'] == 'none' 
+        gameSettings = gameData['gameSettings'] == 'none'
           ? null 
           : GameSettings.fromJson(gameData['gameSettings']);
       }
@@ -338,6 +420,11 @@ class GameController extends GetxController{
   }
 
   Map<String, dynamic> gameDataToMap(){
+    Map<String, dynamic> order = {};
+    speakingOrder.forEach((key, value) {
+      order.addAll({key.toString(): value});
+    });
+
     final Map<String, dynamic> data = <String, dynamic>{};
     data['playersRolesSend'] = playersRolesSend.value;
     data['players'] = playersList.map((element) => element.toJson()).toList();
@@ -345,6 +432,8 @@ class GameController extends GetxController{
     data['day_period'] = currentDayPeriod.value.index;
     data['gameCycleCount'] = gameCycleCount.value;
     data['haveHost'] = haveHost.value;
+    data['speakingOrder'] = order;
+    data['onVote'] = List<int>.from(onVote);
     data['hostId'] = hostId ?? 'none';
     data['isEmpty'] = false;
     data['gameSettings'] = gameSettings?.toJson() ?? 'none';
@@ -374,12 +463,21 @@ class GameController extends GetxController{
   }
 
   void getStartGameData(Map<String, dynamic> gameData){
+    
     gameData = gameData['game_data'];
+
+    Map<int, bool> order = {};
+    Map<String, dynamic>.from(gameData['speakingOrder']).forEach((key, value) {
+      order.addAll({int.parse(key): value});
+    });
+
     playersList.value = List.from(gameData['players']).map((e) => PlayerModel.fromJson(e)).toList();
     gameStage.value = GameStage.values[gameData['stage']];
     currentDayPeriod.value = DayPeriod.values[gameData['day_period']];
     gameCycleCount.value = gameData['gameCycleCount'];
     haveHost.value = gameData['haveHost'];
+    speakingOrder(order);
+    onVote(List<int>.from(gameData['onVote']));
     hostId = gameData['hostId'] == 'none' ? null : gameData['hostId'];
     gameSettings = gameData['gameSettings'] == 'none' ? null : GameSettings.fromJson(gameData['gameSettings']);
     playersRolesSend.value = gameData['playersRolesSend'];
@@ -443,8 +541,18 @@ class GameController extends GetxController{
     playersRolesSend(true);
   }
 
+  
+
 
   Future<void> startFirstDay() async {
+    Map<int, bool> newSpeakingOrder = {};
+    for (var elem in getPlayersWithoutHost()!.values) {
+      newSpeakingOrder.addAll({elem.user.id: false});
+    }
+
+    
+      
+    speakingOrder(newSpeakingOrder);
     gameStage(GameStage.inProgress);
     currentDayPeriod(DayPeriod.day);
     gameCycleCount(gameCycleCount.value + 1);
@@ -453,9 +561,67 @@ class GameController extends GetxController{
       'game_data': gameDataToMap(),
       'room': room!
     };
+
     SocketService().socket.emit('send-start-game', data);
 
     await makeCheckpoint();
+    
+  }
+
+
+  void startSpeach(int userId){
+    Map<int, bool> newSpeakingOrder = {};
+    speakingOrder.forEach((key, value) {
+      if(key == userId){
+        newSpeakingOrder.addAll({key: true});
+      }
+      else{
+        newSpeakingOrder.addAll({key: value});
+      }
+    });
+    speakingOrder(newSpeakingOrder);
+    playersList(playersList
+      .map((element) => element.user.id == userId 
+        ? element.copyWith(isSpeakingTurn: true) 
+        : element.copyWith(isSpeakingTurn: false))
+      .toList()
+    );
+
+    final Map<String, dynamic> data = {
+      'game_data': gameDataToMap(),
+      'room': room!
+    };
+
+    SocketService().socket.emit('send-start-game', data);
+
+  }
+
+
+  bool haveSpeakers(){
+    return playersList.where((p0) => p0.isSpeakingTurn).toList().isNotEmpty;
+  }
+
+  void setOnVote({int? id}){
+    if(id != null){
+      onVote(List.from(onVote)..add(id));
+      playersList(playersList
+        .map((element) => element.user.id == id 
+          ? element.copyWith(isOnVote: true) 
+          : element)
+        .toList()
+      );
+      
+    }
+    playersList(playersList
+      .map((element) => element.copyWith(isSpeakingTurn: false))
+      .toList()
+    );
+    myPlayer(getMyPlayer());
+    final Map<String, dynamic> data = {
+      'game_data': gameDataToMap(),
+      'room': room
+    };
+    SocketService().socket.emit('send-start-game', data);
     
   }
 
@@ -472,11 +638,21 @@ class GameController extends GetxController{
     final prefs = await SharedPreferences.getInstance();
     String? srt = prefs.getString('checkpoint');
     if(srt != null){
-      Map<String, dynamic> data = Map.from(json.decode(srt));
+      Map<String, dynamic> data = Map<String, dynamic>.from(json.decode(srt));
       if(data['room'] == room){
-        getStartGameData(data['game_data']);
+        getStartGameData(data);
       }
     }
+  }
+
+
+  Future<void> returnToCheckpoint() async {
+    await loadCheckPoint();
+    final Map<String, dynamic> data = {
+      'game_data': gameDataToMap(),
+      'room': room
+    };
+    SocketService().socket.emit('send-start-game', data);
   }
 
 
@@ -514,7 +690,5 @@ class GameController extends GetxController{
     SocketService().socket.off('start-game');
     super.onClose();
   }
-  
-  
   
 }
