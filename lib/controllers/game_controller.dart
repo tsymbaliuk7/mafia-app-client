@@ -19,12 +19,14 @@ import 'auth_controller.dart';
 
 enum GameStage {lobby, start, inProgress, over}
 enum DayPeriod {none, day, night}
+enum GameResult {none, mafia, peace}
 
 class GameController extends GetxController{
   final AuthController authController = Get.find();
 
   var gameStage = GameStage.lobby.obs;
   var currentDayPeriod = DayPeriod.none.obs;
+  var gameResult= GameResult.none;
   var gameCycleCount = 0.obs;
 
   var playersRolesSend = false.obs;
@@ -117,6 +119,61 @@ class GameController extends GetxController{
     room = roomId;
   }
 
+  void finishGame(){
+    gameStage(GameStage.over);
+    gameCycleCount(0);
+    currentDayPeriod(DayPeriod.none);
+    playersRolesSend(false);
+    haveHost(true);
+    gameSettings = null;
+    speakingOrder(<int, bool>{});
+    votingResults({});
+    onVote([]);
+    killedByMafia([]);
+    isFirsVoting = true;
+    
+    gameResult = playersList.where((p0) => p0.isAlive && p0.isMafia()).isEmpty ? GameResult.peace : GameResult.mafia;
+
+    playersList(playersList
+      .map((element) => PlayerModel(user: element.user, role: element.role))
+      .toList());
+    
+    myPlayer(getMyPlayer());
+    
+    final Map<String, dynamic> data = {
+      'game_data': gameDataToMap(),
+      'room': room
+    };
+    SocketService().socket.emit('send-start-game', data);
+
+    if(gameResult == GameResult.mafia){
+      Get.defaultDialog(
+        title: '',
+        backgroundColor: Colors.white,
+        barrierDismissible: true,
+        radius: 25,
+        content: const RoleModal(
+          roleTitle: 'mafia\nwin', 
+          roleImage: 'icons/tie.svg', 
+          roleColor: Colors.black,
+        )
+      );
+    }
+    else if(gameResult == GameResult.peace){
+      Get.defaultDialog(
+        title: '',
+        backgroundColor: Colors.white,
+        barrierDismissible: true,
+        radius: 25,
+        content: const RoleModal(
+          roleTitle: 'peaceful\nwin', 
+          roleImage: 'icons/peace.svg', 
+          roleColor: Color.fromARGB(255, 220, 29, 15),
+        )
+      );
+    }
+  }
+
   void restartGame(){
     gameStage(GameStage.lobby);
     gameCycleCount(0);
@@ -129,6 +186,7 @@ class GameController extends GetxController{
     onVote([]);
     killedByMafia([]);
     isFirsVoting = true;
+    gameResult = GameResult.none;
 
     playersList(playersList
       .map((element) => element.role != PlayerRole.host 
@@ -143,6 +201,11 @@ class GameController extends GetxController{
       'room': room
     };
     SocketService().socket.emit('send-start-game', data);
+  }
+
+  bool isFurtherGameHasSense(){
+    return playersList.where((p0) => p0.isAlive && p0.isMafia()).isNotEmpty 
+      && playersList.where((p0) => p0.isAlive && p0.isPeaceful()).length - playersList.where((p0) => p0.isAlive && p0.isMafia()).length > 1;
   }
 
   void changePeriod() async {
@@ -333,6 +396,7 @@ class GameController extends GetxController{
 
         playersRolesSend.value = gameData['playersRolesSend'];
         gameStage.value = GameStage.values[gameData['stage']];
+        gameResult = GameResult.values[gameData['gameResult']];
         currentDayPeriod.value = DayPeriod.values[gameData['day_period']];
         gameCycleCount.value = gameData['gameCycleCount'];
         haveHost.value = gameData['haveHost'];
@@ -477,6 +541,7 @@ class GameController extends GetxController{
     data['playersRolesSend'] = playersRolesSend.value;
     data['players'] = playersList.map((element) => element.toJson()).toList();
     data['stage'] = gameStage.value.index;
+    data['gameResult'] = gameResult.index;
     data['day_period'] = currentDayPeriod.value.index;
     data['gameCycleCount'] = gameCycleCount.value;
     data['haveHost'] = haveHost.value;
@@ -528,6 +593,7 @@ class GameController extends GetxController{
 
     playersList.value = List.from(gameData['players']).map((e) => PlayerModel.fromJson(e)).toList();
     gameStage.value = GameStage.values[gameData['stage']];
+    gameResult = GameResult.values[gameData['gameResult']];
     currentDayPeriod.value = DayPeriod.values[gameData['day_period']];
     gameCycleCount.value = gameData['gameCycleCount'];
     haveHost.value = gameData['haveHost'];
@@ -540,6 +606,33 @@ class GameController extends GetxController{
     playersRolesSend.value = gameData['playersRolesSend'];
 
     myPlayer.value = getMyPlayer() ?? PlayerModel(user: UserModel.empty());
+
+    if(gameResult == GameResult.mafia){
+      Get.defaultDialog(
+        title: '',
+        backgroundColor: Colors.white,
+        barrierDismissible: true,
+        radius: 25,
+        content: const RoleModal(
+          roleTitle: 'mafia\nwin', 
+          roleImage: 'icons/tie.svg', 
+          roleColor: Colors.black,
+        )
+      );
+    }
+    else if(gameResult == GameResult.peace){
+      Get.defaultDialog(
+        title: '',
+        backgroundColor: Colors.white,
+        barrierDismissible: true,
+        radius: 25,
+        content: const RoleModal(
+          roleTitle: 'peaceful\nwin', 
+          roleImage: 'icons/peace.svg', 
+          roleColor: Color.fromARGB(255, 220, 29, 15),
+        )
+      );
+    }
 
 
     if(gameData['showVotingResults']){
@@ -718,8 +811,6 @@ class GameController extends GetxController{
       .toList()
     );
     myPlayer(getMyPlayer());
-    
-    print(isNextSpeakerExist());
 
     if(isNextSpeakerExist()){
       int firstKey = speakingOrder.keys.first;
@@ -832,12 +923,15 @@ class GameController extends GetxController{
 
   void voteFor({int? id}){
     if(!myPlayer.value.isHost()){
-      if(id != null){
-        votingResults.addAll({myPlayer.value.user.id : id});
+      if(!votingResults.containsKey(myPlayer.value.user.id)){
+        if(id != null){
+          votingResults.addAll({myPlayer.value.user.id : id});
+        }
+        else{
+          votingResults.addAll({myPlayer.value.user.id : onVote[onVote.length - 1]});
+        }
       }
-      else{
-        votingResults.addAll({myPlayer.value.user.id : onVote[onVote.length - 1]});
-      }
+
       playersList(playersList
         .map((element) => element.user.id == myPlayer.value.user.id 
           ? element.copyWith(isVoting: false) 

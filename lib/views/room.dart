@@ -170,7 +170,8 @@ _showToast() {
                                   child: Text(
                                     widget.game.gameStage.value == GameStage.lobby 
                                     ? widget.webrtcController.room 
-                                    : '${widget.game.isNight() ? 'Night' : 'Day'} ${widget.game.gameCycleCount}',
+                                    : widget.game.gameStage.value == GameStage.over ? 'Game Over'
+                                      : '${widget.game.isNight() ? 'Night' : 'Day'} ${widget.game.gameCycleCount}',
                                   ),
                                 )
                               ),

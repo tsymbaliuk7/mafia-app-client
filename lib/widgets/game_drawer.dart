@@ -105,6 +105,7 @@ class GameDrawer extends StatelessWidget {
                                 order: game.haveHost.value ? e : e + 1,
                                 player: don![e]!,
                                 isYou: game.myPlayer.value.user.id == don[e]!.user.id,
+                                isJustKilled: game.killedByMafia.contains(don[e]!.user.id),
                               )).toList()
                               
                             ],
@@ -145,6 +146,7 @@ class GameDrawer extends StatelessWidget {
                                 order: game.haveHost.value ? e : e + 1,
                                 player: mafia![e]!,
                                 isYou: game.myPlayer.value.user.id == mafia[e]!.user.id,
+                                isJustKilled: game.killedByMafia.contains(mafia[e]!.user.id),
                               )).toList()
                               
                             ],
@@ -185,6 +187,7 @@ class GameDrawer extends StatelessWidget {
                                 order: game.haveHost.value ? e : e + 1,
                                 player: peaceful![e]!,
                                 isYou: game.myPlayer.value.user.id == peaceful[e]!.user.id,
+                                isJustKilled: game.killedByMafia.contains(peaceful[e]!.user.id),
                               )).toList()
                               
                             ],
@@ -226,6 +229,7 @@ class GameDrawer extends StatelessWidget {
                                 order: game.haveHost.value ? e : e + 1,
                                 player: players![e]!,
                                 isYou: game.myPlayer.value.user.id == players[e]!.user.id,
+                                isJustKilled: game.killedByMafia.contains(players[e]!.user.id),
                               )).toList()
                               
                             ],

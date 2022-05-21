@@ -234,10 +234,7 @@ class BottomNavBar extends StatelessWidget {
                 ],
               ),
             ) : SizedBox(height: 80, width: size.width,),
-            
-            
-               
-                
+    
             game.myPlayer.value.isHost() 
                 && game.gameStage.value == g.GameStage.inProgress
                 && game.currentDayPeriod.value == g.DayPeriod.day
@@ -371,13 +368,15 @@ class BottomNavBar extends StatelessWidget {
                                     ],
                                   ),
                                   child: Center(
-                                    child: Icon(
+                                    child: game.isFurtherGameHasSense() ? Icon(
                                       game.currentDayPeriod.value == g.DayPeriod.night 
                                         ? Icons.light_mode_rounded 
                                         : Icons.dark_mode_rounded,
                                       color: Colors.white,
+                                    ) : const Icon(Icons.wb_twilight_outlined,
+                                      color: Colors.white,
                                     )
-                                  ),
+                                  ) ,
                                 ),
                                 Material(
                                   color: Colors.transparent,
@@ -385,7 +384,13 @@ class BottomNavBar extends StatelessWidget {
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(40),
                                     onTap: () async {
-                                      game.changePeriod();
+                                      if(game.isFurtherGameHasSense()){
+                                        game.changePeriod();
+                                      }
+                                      else{
+                                        game.finishGame();
+                                      }
+                                      
                                     },
                                     child: const SizedBox(
                                       width: 50,
@@ -712,6 +717,90 @@ class BottomNavBar extends StatelessWidget {
                     ],
                   ),
                 ) : SizedBox(height: 80, width: size.width,),
+
+            game.myPlayer.value.isHost() && game.gameStage.value == g.GameStage.over
+            ? SizedBox(
+              width: size.width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 230,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: const BorderRadius.all(Radius.elliptical(230, 150)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 0),
+                        ),
+                      ]
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Expanded(
+                                flex: 1,
+                                child: SizedBox(),
+                              ),
+                              Stack(
+                                children: [
+                                  Container(
+                                    width: 50,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      color:const Color.fromARGB(255, 218, 0, 242),
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.refresh_rounded,
+                                        color: Colors.white,
+                                      )
+                                    ),
+                                  ),
+                                  Material(
+                                    color: Colors.transparent,
+                                    borderRadius: BorderRadius.circular(40),
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(40),
+                                      onTap: () {
+                                        game.restartGame();
+                                      },
+                                      child: const SizedBox(
+                                        width: 50,
+                                        height: 50,
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                              const Expanded(
+                                flex: 1,
+                                child: SizedBox()
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ) : SizedBox(height: 80, width: size.width,),
 
             Positioned(
               bottom: 0,
