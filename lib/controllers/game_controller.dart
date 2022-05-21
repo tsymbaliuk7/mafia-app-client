@@ -8,7 +8,6 @@ import 'package:mafiaclient/models/player_model.dart';
 import 'package:mafiaclient/views/home_page.dart';
 import 'package:mafiaclient/widgets/game_setting_modal.dart';
 import 'package:mafiaclient/widgets/role_modal.dart';
-import 'package:mafiaclient/widgets/voting_widget.dart';
 import 'package:mafiaclient/widgets/votings_result_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -45,6 +44,7 @@ class GameController extends GetxController{
 
   var speakingOrder = <int, bool>{}.obs;
   var onVote = <int>[].obs;
+  var killedByMafia = <int>[].obs;
 
   bool isFirsVoting = true;
 
@@ -85,6 +85,11 @@ class GameController extends GetxController{
     super.onInit();
   }
 
+
+  bool hasMafiaVoter(){
+    return playersList.where((p0) => p0.isMafiaVoter).isNotEmpty;
+  }
+
   bool isNight(){
     return currentDayPeriod.value == DayPeriod.night;
   }
@@ -120,11 +125,18 @@ class GameController extends GetxController{
     haveHost(true);
     gameSettings = null;
     speakingOrder(<int, bool>{});
+    votingResults({});
     onVote([]);
+    killedByMafia([]);
+    isFirsVoting = true;
 
     playersList(playersList
-      .map((element) => element.role != PlayerRole.host ? element.copyWith(role: PlayerRole.undefined) : element)
+      .map((element) => element.role != PlayerRole.host 
+        ? PlayerModel(user: element.user, role: PlayerRole.undefined) 
+        : PlayerModel(user: element.user, role: PlayerRole.host))
       .toList());
+    
+    myPlayer(getMyPlayer());
     
     final Map<String, dynamic> data = {
       'game_data': gameDataToMap(),
@@ -236,6 +248,18 @@ class GameController extends GetxController{
     return result.isEmpty ? null : result;
   }
 
+  Map<int, PlayerModel>? getAlivePlayers(){
+    Map<int, PlayerModel> result = {};
+    playersList.asMap().forEach((key, value) {
+      if(!value.isHost() && value.isAlive){
+        result[key] = value;
+      }
+    });
+    return result.isEmpty ? null : result;
+  }
+
+  
+
   
 
 
@@ -314,6 +338,7 @@ class GameController extends GetxController{
         haveHost.value = gameData['haveHost'];
         speakingOrder(order);
         votingResults(voting);
+        killedByMafia(List<int>.from(gameData['killedByMafia']));
         onVote(List<int>.from(gameData['onVote']));
         hostId = gameData['hostId'] == 'none' ? null : gameData['hostId'];
         gameSettings = gameData['gameSettings'] == 'none'
@@ -458,6 +483,7 @@ class GameController extends GetxController{
     data['speakingOrder'] = order;
     data['votingResults'] = voting;
     data['onVote'] = List<int>.from(onVote);
+    data['killedByMafia'] = List<int>.from(killedByMafia);
     data['hostId'] = hostId ?? 'none';
     data['isEmpty'] = false;
     data['showVotingResults'] = showVotingResults;
@@ -508,6 +534,7 @@ class GameController extends GetxController{
     speakingOrder(order);
     votingResults(voting);
     onVote(List<int>.from(gameData['onVote']));
+    killedByMafia(List<int>.from(gameData['killedByMafia']));
     hostId = gameData['hostId'] == 'none' ? null : gameData['hostId'];
     gameSettings = gameData['gameSettings'] == 'none' ? null : GameSettings.fromJson(gameData['gameSettings']);
     playersRolesSend.value = gameData['playersRolesSend'];
@@ -628,11 +655,13 @@ class GameController extends GetxController{
     });
     speakingOrder(newSpeakingOrder);
     playersList(playersList
-      .map((element) => element.user.id == userId 
-        ? element.copyWith(isSpeakingTurn: true) 
-        : element.copyWith(isSpeakingTurn: false))
+      .map((element) => element.copyWith(
+        isSpeakingTurn: element.user.id == userId,
+        haveLastWord: false
+      ))
       .toList()
     );
+    killedByMafia([]);
 
     final Map<String, dynamic> data = {
       'game_data': gameDataToMap(),
@@ -646,6 +675,29 @@ class GameController extends GetxController{
 
   bool haveSpeakers(){
     return playersList.where((p0) => p0.isSpeakingTurn).toList().isNotEmpty;
+  }
+
+  void kill({int? id}){
+    if(id != null){
+      killedByMafia(List.from(killedByMafia)..add(id));
+      if(!gameSettings!.lastWordForKilled){
+        var newSpeakingOrder = Map<int, bool>.from(speakingOrder);
+        newSpeakingOrder.remove(id);
+        speakingOrder(newSpeakingOrder);
+      }
+      playersList(playersList
+        .map((element) => element.user.id == id ? element.copyWith(
+          isAlive: false,
+          isMafiaVoter: false
+        ) : element.copyWith(isMafiaVoter: false))
+        .toList());
+    }
+
+    final Map<String, dynamic> data = {
+      'game_data': gameDataToMap(),
+      'room': room
+    };
+    SocketService().socket.emit('send-start-game', data);
   }
 
 
@@ -667,6 +719,8 @@ class GameController extends GetxController{
     );
     myPlayer(getMyPlayer());
     
+    print(isNextSpeakerExist());
+
     if(isNextSpeakerExist()){
       int firstKey = speakingOrder.keys.first;
       var newSpeakingOrder = Map<int, bool>.from(speakingOrder);
@@ -688,8 +742,39 @@ class GameController extends GetxController{
     return speakingOrder.values.where((element) => element).length == speakingOrder.values.length;
   }
 
-  
+  bool isNoOneSpeaksBefore(){
+    return speakingOrder.values.where((element) => !element).length == speakingOrder.values.length;
+  }
 
+
+  void startMafiaTime(){
+    if(playersList.where((p0) => p0.isDon() && p0.isAlive).length == 1){
+      playersList(
+        playersList
+          .map((element) => element.copyWith(isMafiaVoter: element.isDon()))
+          .toList()
+      );
+    }
+    else{
+      int voterId = playersList
+        .firstWhereOrNull((element) => element.isAlive && element.isMafia())!.user.id;
+      playersList(
+        playersList
+          .map((element) => element.copyWith(isMafiaVoter: element.user.id == voterId))
+          .toList()
+      );
+
+    }
+
+    final Map<String, dynamic> data = {
+      'game_data': gameDataToMap(),
+      'room': room
+    };
+    SocketService().socket.emit('send-start-game', data);
+    
+
+  }
+  
 
   void startVoting(){
     playersList(playersList
@@ -707,19 +792,36 @@ class GameController extends GetxController{
   void startLastWord(){
     votingResults({});
 
-    var newSpeakingOrder = Map<int, bool>.from(speakingOrder);
-    newSpeakingOrder.remove(onVote[0]);
-    speakingOrder(newSpeakingOrder);
+    if(onVote.isNotEmpty){
+      var newSpeakingOrder = Map<int, bool>.from(speakingOrder);
+      newSpeakingOrder.remove(onVote[0]);
+      speakingOrder(newSpeakingOrder);
+      isFirsVoting = true;
+      playersList(playersList
+        .map((element) => element.copyWith(
+          isAlive: element.isAlive ? element.user.id != onVote[0] : false,
+          isOnVote: false,
+          haveLastWord: element.user.id == onVote[0]
+        ))
+        .toList());
+      onVote([]);
+    }
 
-    isFirsVoting = true;
-    playersList(playersList
-      .map((element) => element.copyWith(
-        isAlive: element.isAlive ? element.user.id != onVote[0] : false,
-        isOnVote: false,
-        haveLastWord: element.user.id == onVote[0]
-      ))
-      .toList());
-    onVote([]);
+    if(killedByMafia.isNotEmpty){
+      var newSpeakingOrder = Map<int, bool>.from(speakingOrder);
+      newSpeakingOrder.remove(killedByMafia[0]);
+      speakingOrder(newSpeakingOrder);
+      isFirsVoting = true;
+      playersList(playersList
+        .map((element) => element.copyWith(
+          isAlive: element.isAlive ? element.user.id != killedByMafia[0] : false,
+          isOnVote: false,
+          haveLastWord: element.user.id == killedByMafia[0]
+        ))
+        .toList());
+      killedByMafia([]);
+    }
+    
     final Map<String, dynamic> data = {
       'game_data': gameDataToMap(),
       'room': room

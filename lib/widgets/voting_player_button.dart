@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 class VotingPlayerButton extends StatelessWidget {
-  const VotingPlayerButton({Key? key, required this.orderId, required this.onTap}) : super(key: key);
+  const VotingPlayerButton({Key? key, 
+    required this.orderId, 
+    required this.onTap,
+  }) : super(key: key);
 
   final int orderId;
   final void Function()? onTap;
