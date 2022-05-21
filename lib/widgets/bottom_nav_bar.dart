@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:mafiaclient/controllers/game_controller.dart' as g;
 import 'package:mafiaclient/views/home_page.dart';
 import 'package:mafiaclient/widgets/voting_player_button.dart';
+import 'package:mafiaclient/widgets/voting_widget.dart';
 
 import '../controllers/webrtc_controller.dart';
 
@@ -240,7 +241,10 @@ class BottomNavBar extends StatelessWidget {
             game.gameStage.value;
             game.myPlayer.value.isHost() && game.gameStage.value == g.GameStage.inProgress;
             var nextSpeaker = game.getNextSpeaker();
-            return game.myPlayer.value.isHost() && game.gameStage.value == g.GameStage.inProgress && !game.haveSpeakers()
+            return game.myPlayer.value.isHost() 
+              && game.gameStage.value == g.GameStage.inProgress
+              && !game.haveSpeakers()
+              && !game.myPlayer.value.isVoting
             ? SizedBox(
               width: size.width,
               child: Row(
@@ -349,7 +353,7 @@ class BottomNavBar extends StatelessWidget {
                               )
                             ],
                           ) 
-                          : Stack(
+                          : game.onVote.length != 1 ? Stack(
                             children: [
                               Container(
                                 width: 50,
@@ -378,7 +382,45 @@ class BottomNavBar extends StatelessWidget {
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(40),
                                   onTap: (){
-                                    
+                                    game.startVoting();
+                                  },
+                                  child: const SizedBox(
+                                    width: 50,
+                                    height: 50,
+                                  ),
+                                ),
+                              )
+                            ],
+                          ) : Stack(
+                            children: [
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color:const Color.fromARGB(255, 218, 0, 242),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.waving_hand_outlined,
+                                    color: Colors.white,
+                                  )
+                                ),
+                              ),
+                              Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(40),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(40),
+                                  onTap: (){
+                                    game.startLastWord();
                                   },
                                   child: const SizedBox(
                                     width: 50,
@@ -397,6 +439,13 @@ class BottomNavBar extends StatelessWidget {
                 ],
               ),
             ) : SizedBox(height: 80, width: size.width,);
+          }
+        ),
+
+
+        Obx(() {
+            return game.myPlayer.value.isVoting && game.gameStage.value == g.GameStage.inProgress
+            ? VotingWidget() : SizedBox(height: 80, width: size.width,);
           }
         ),
        

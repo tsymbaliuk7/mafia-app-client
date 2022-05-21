@@ -29,7 +29,11 @@ class VideoView extends StatelessWidget {
             decoration: BoxDecoration(
               color: playerModel.isHost() ?const Color.fromARGB(255, 244, 212, 30).withOpacity(0.25) :Colors.black.withOpacity(0.25),
               borderRadius: BorderRadius.circular(25),
-              border: playerModel.isSpeakingTurn ? Border.all(color: gradientColors[0], width: 2) : null,
+              border: playerModel.isSpeakingTurn 
+                ? Border.all(color: gradientColors[0], width: 2) 
+                : playerModel.haveLastWord 
+                  ? Border.all(color: Colors.black, width: 2) 
+                  : null,
             ),
             child: webrtcUser.isMutedVideo.value || webrtcUser.videoRenderer == null
             ?  Center(
@@ -47,11 +51,12 @@ class VideoView extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        '$playerOrder${playerModel.user.username[0].toUpperCase()}',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.black.withOpacity(0.7), fontSize: 40),
-                      ),
+                      playerModel.isAlive ?
+                        Text(
+                          '$playerOrder${playerModel.user.username[0].toUpperCase()}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.black.withOpacity(0.7), fontSize: 40),
+                        ) : Icon(Icons.sentiment_very_dissatisfied_rounded, color: Colors.black.withOpacity(0.7), size: 50),
                     ],
                   ),
                 ),
@@ -103,7 +108,7 @@ class VideoView extends StatelessWidget {
 
 
           playerModel.isOnVote ? Positioned(
-            right: 5,
+            left: 5,
             top: 20,
             child: Container(
               width: 10,
@@ -113,6 +118,34 @@ class VideoView extends StatelessWidget {
                 borderRadius: BorderRadius.all(Radius.circular(40)),
               ),
               
+            )
+          )
+          : const SizedBox(),
+
+          game.votingResults.containsKey(playerModel.user.id) ? Positioned(
+            right: 5,
+            top: 20,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 218, 0, 242),
+                borderRadius: BorderRadius.all(Radius.circular(40)),
+              ),
+              child: Center(
+                child: Text(
+                  game
+                    .getPlayerByUserIdWithOrder(game.votingResults[playerModel.user.id]!)
+                    !.keys
+                    .first
+                    .toString(),
+                  style: const TextStyle(
+                    color: Colors.white, 
+                    fontWeight: FontWeight.w600,
+                    fontSize: 25
+                  ),
+                ),
+              ),
             )
           )
           : const SizedBox(),

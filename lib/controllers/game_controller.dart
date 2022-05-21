@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mafiaclient/cofig/styles.dart';
@@ -7,6 +8,8 @@ import 'package:mafiaclient/models/player_model.dart';
 import 'package:mafiaclient/views/home_page.dart';
 import 'package:mafiaclient/widgets/game_setting_modal.dart';
 import 'package:mafiaclient/widgets/role_modal.dart';
+import 'package:mafiaclient/widgets/voting_widget.dart';
+import 'package:mafiaclient/widgets/votings_result_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
@@ -38,8 +41,12 @@ class GameController extends GetxController{
 
   GameSettings? gameSettings;
 
+  var votingResults = <int, int>{}.obs;
+
   var speakingOrder = <int, bool>{}.obs;
   var onVote = <int>[].obs;
+
+  bool isFirsVoting = true;
 
   var readyToDisplayGame = false.obs;
   bool needToReceiveGameData = true;
@@ -128,13 +135,19 @@ class GameController extends GetxController{
 
   void changePeriod() async {
     if(currentDayPeriod.value == DayPeriod.night){
+      var newSpeakingOrder = Map<int, bool>.from(speakingOrder);
+      newSpeakingOrder.updateAll((key, value) => false);
+      speakingOrder(newSpeakingOrder);
       currentDayPeriod(DayPeriod.day);
       gameCycleCount(gameCycleCount.value + 1);
       await makeCheckpoint();
     }
     else{
       currentDayPeriod(DayPeriod.night);
-      playersList(playersList.map((p0) => p0.copyWith(isOnVote: false)).toList());
+      playersList(playersList.map((p0) => p0.copyWith(
+        isOnVote: false,
+        haveLastWord: false
+      )).toList());
     }
     final Map<String, dynamic> data = {
       'game_data': gameDataToMap(),
@@ -216,7 +229,7 @@ class GameController extends GetxController{
   Map<int, PlayerModel>? getPlayersNotOnVote(){
     Map<int, PlayerModel> result = {};
     playersList.asMap().forEach((key, value) {
-      if(!value.isOnVote && !value.isHost()){
+      if(!value.isOnVote && !value.isHost() && value.isAlive){
         result[key] = value;
       }
     });
@@ -285,7 +298,11 @@ class GameController extends GetxController{
           }
           
         }
+        Map<int, int> voting = {};
         Map<int, bool> order = {};
+        Map<String, dynamic>.from(gameData['votingResults']).forEach((key, value) {
+          voting.addAll({int.parse(key): value});
+        });
         Map<String, dynamic>.from(gameData['speakingOrder']).forEach((key, value) {
           order.addAll({int.parse(key): value});
         });
@@ -296,6 +313,7 @@ class GameController extends GetxController{
         gameCycleCount.value = gameData['gameCycleCount'];
         haveHost.value = gameData['haveHost'];
         speakingOrder(order);
+        votingResults(voting);
         onVote(List<int>.from(gameData['onVote']));
         hostId = gameData['hostId'] == 'none' ? null : gameData['hostId'];
         gameSettings = gameData['gameSettings'] == 'none'
@@ -419,10 +437,15 @@ class GameController extends GetxController{
     }
   }
 
-  Map<String, dynamic> gameDataToMap(){
+  Map<String, dynamic> gameDataToMap({bool showVotingResults = false}){
     Map<String, dynamic> order = {};
     speakingOrder.forEach((key, value) {
       order.addAll({key.toString(): value});
+    });
+
+    Map<String, dynamic> voting = {};
+    votingResults.forEach((key, value) {
+      voting.addAll({key.toString(): value});
     });
 
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -433,9 +456,11 @@ class GameController extends GetxController{
     data['gameCycleCount'] = gameCycleCount.value;
     data['haveHost'] = haveHost.value;
     data['speakingOrder'] = order;
+    data['votingResults'] = voting;
     data['onVote'] = List<int>.from(onVote);
     data['hostId'] = hostId ?? 'none';
     data['isEmpty'] = false;
+    data['showVotingResults'] = showVotingResults;
     data['gameSettings'] = gameSettings?.toJson() ?? 'none';
     return data;
   }
@@ -466,7 +491,11 @@ class GameController extends GetxController{
     
     gameData = gameData['game_data'];
 
+    Map<int, int> voting = {};
     Map<int, bool> order = {};
+    Map<String, dynamic>.from(gameData['votingResults']).forEach((key, value) {
+      voting.addAll({int.parse(key): value});
+    });
     Map<String, dynamic>.from(gameData['speakingOrder']).forEach((key, value) {
       order.addAll({int.parse(key): value});
     });
@@ -477,12 +506,31 @@ class GameController extends GetxController{
     gameCycleCount.value = gameData['gameCycleCount'];
     haveHost.value = gameData['haveHost'];
     speakingOrder(order);
+    votingResults(voting);
     onVote(List<int>.from(gameData['onVote']));
     hostId = gameData['hostId'] == 'none' ? null : gameData['hostId'];
     gameSettings = gameData['gameSettings'] == 'none' ? null : GameSettings.fromJson(gameData['gameSettings']);
     playersRolesSend.value = gameData['playersRolesSend'];
 
     myPlayer.value = getMyPlayer() ?? PlayerModel(user: UserModel.empty());
+
+
+    if(gameData['showVotingResults']){
+      Get.defaultDialog(
+        title: 'Voting results',
+        backgroundColor: Colors.white,
+        barrierDismissible: true,
+        titleStyle: const TextStyle(
+          fontSize: 25,
+          fontWeight: FontWeight.w600,
+          color: Color.fromARGB(255, 218, 0, 242) 
+        ),
+        radius: 25,
+        content: VotingsResultModal()
+      ).then((value){
+        votingResults({});
+      });
+    }
 
   }
 
@@ -549,7 +597,6 @@ class GameController extends GetxController{
     for (var elem in getPlayersWithoutHost()!.values) {
       newSpeakingOrder.addAll({elem.user.id: false});
     }
-
     
       
     speakingOrder(newSpeakingOrder);
@@ -601,6 +648,8 @@ class GameController extends GetxController{
     return playersList.where((p0) => p0.isSpeakingTurn).toList().isNotEmpty;
   }
 
+
+
   void setOnVote({int? id}){
     if(id != null){
       onVote(List.from(onVote)..add(id));
@@ -617,11 +666,164 @@ class GameController extends GetxController{
       .toList()
     );
     myPlayer(getMyPlayer());
+    
+    if(isNextSpeakerExist()){
+      int firstKey = speakingOrder.keys.first;
+      var newSpeakingOrder = Map<int, bool>.from(speakingOrder);
+      newSpeakingOrder.remove(firstKey);
+      newSpeakingOrder.addAll({firstKey: true});
+      speakingOrder(newSpeakingOrder);
+    }
+    
     final Map<String, dynamic> data = {
       'game_data': gameDataToMap(),
       'room': room
     };
     SocketService().socket.emit('send-start-game', data);
+
+    
+  }
+
+  bool isNextSpeakerExist(){
+    return speakingOrder.values.where((element) => element).length == speakingOrder.values.length;
+  }
+
+  
+
+
+  void startVoting(){
+    playersList(playersList
+      .map((element) => element.isAlive ? element.copyWith(isVoting: true) : element)
+      .toList()
+    );
+    final Map<String, dynamic> data = {
+      'game_data': gameDataToMap(),
+      'room': room
+    };
+    SocketService().socket.emit('send-start-game', data);
+    myPlayer(getMyPlayer());
+  }
+
+  void startLastWord(){
+    votingResults({});
+
+    var newSpeakingOrder = Map<int, bool>.from(speakingOrder);
+    newSpeakingOrder.remove(onVote[0]);
+    speakingOrder(newSpeakingOrder);
+
+    isFirsVoting = true;
+    playersList(playersList
+      .map((element) => element.copyWith(
+        isAlive: element.isAlive ? element.user.id != onVote[0] : false,
+        isOnVote: false,
+        haveLastWord: element.user.id == onVote[0]
+      ))
+      .toList());
+    onVote([]);
+    final Map<String, dynamic> data = {
+      'game_data': gameDataToMap(),
+      'room': room
+    };
+    SocketService().socket.emit('send-start-game', data);
+    myPlayer(getMyPlayer());
+  }
+
+  void voteFor({int? id}){
+    if(!myPlayer.value.isHost()){
+      if(id != null){
+        votingResults.addAll({myPlayer.value.user.id : id});
+      }
+      else{
+        votingResults.addAll({myPlayer.value.user.id : onVote[onVote.length - 1]});
+      }
+      playersList(playersList
+        .map((element) => element.user.id == myPlayer.value.user.id 
+          ? element.copyWith(isVoting: false) 
+          : element)
+        .toList()
+      );
+      
+      final Map<String, dynamic> data = {
+        'game_data': gameDataToMap(),
+        'room': room
+      };
+      SocketService().socket.emit('send-start-game', data);
+      myPlayer(getMyPlayer());
+    }
+    else{
+      var finalVotings = <int, int>{};
+
+      var finalVotingCounts = <int, int>{};
+
+      playersList.where((p0) => !p0.isHost() && p0.isAlive).map((element) => element.user.id).forEach((element) {
+        if(votingResults.containsKey(element)){
+          finalVotings[element] = votingResults[element]!;
+        }
+        else{
+          finalVotings[element] = onVote[onVote.length - 1];
+        }
+      },);
+
+      int max = 0;
+
+      for (var element in Set.from(finalVotings.values)) {
+        int quantity = finalVotings.values.where((e) => e == element).length;
+        max = quantity > max ? quantity : max;
+        finalVotingCounts[element] = quantity;
+      }
+
+      List<int> newOnVote = finalVotingCounts.keys.where((element) => finalVotingCounts[element] == max).toList();
+
+      if(setEquals(Set.from(newOnVote), Set.from(onVote))){
+        if(isFirsVoting){
+          onVote(newOnVote);
+          isFirsVoting = false;
+        }
+        else{
+          onVote(<int>[]);
+          isFirsVoting = true;
+        }
+      }
+      else{
+        onVote(newOnVote);
+        isFirsVoting = true;
+      }
+
+      votingResults(finalVotings);
+
+
+      playersList(playersList
+        .map((element) => element.copyWith(
+          isVoting: false, 
+          isOnVote: onVote.length == 1 ? false : onVote.contains(element.user.id))
+        )
+        .toList()
+      );
+
+
+      final Map<String, dynamic> data = {
+        'game_data': gameDataToMap(showVotingResults: true),
+        'room': room
+      };
+      SocketService().socket.emit('send-start-game', data);
+      myPlayer(getMyPlayer());
+      Get.defaultDialog(
+        title: 'Voting results',
+        backgroundColor: Colors.white,
+        barrierDismissible: true,
+        titleStyle: const TextStyle(
+          fontSize: 25,
+          fontWeight: FontWeight.w600,
+          color: Color.fromARGB(255, 218, 0, 242) 
+        ),
+        radius: 25,
+        content: VotingsResultModal()
+      ).then((value){
+        votingResults({});
+      });
+
+    }
+    
     
   }
 

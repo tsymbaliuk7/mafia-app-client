@@ -6,6 +6,8 @@ class PlayerModel{
   final UserModel user;
   bool isAlive;
   bool isOnVote;
+  bool isVoting;
+  bool isMafiaVoter;
   PlayerRole role;
   bool isSpeakingTurn;
   bool isCheating;
@@ -15,6 +17,8 @@ class PlayerModel{
     required this.user, 
     this.isAlive = true, 
     this.role = PlayerRole.undefined, 
+    this.isVoting = false,
+    this.isMafiaVoter = false,
     this.isSpeakingTurn = false,
     this.isCheating = false,
     this.isOnVote = false,
@@ -27,6 +31,8 @@ class PlayerModel{
     data['role'] = role.index;
     data['isAlive'] = isAlive;
     data['isSpeakingTurn'] = isSpeakingTurn;
+    data['isVoting'] = isVoting;
+    data['isMafiaVoter'] = isMafiaVoter;
     data['isCheating'] = isCheating;
     data['isOnVote'] = isOnVote;
     data['haveLastWord'] = haveLastWord;
@@ -40,6 +46,8 @@ class PlayerModel{
       role: PlayerRole.values[json["role"]],
       isAlive: json["isAlive"],
       isSpeakingTurn: json["isSpeakingTurn"],
+      isVoting: json["isVoting"],
+      isMafiaVoter: json["isMafiaVoter"],
       isCheating: json["isCheating"],
       isOnVote: json["isOnVote"],
       haveLastWord: json["haveLastWord"],
@@ -54,6 +62,8 @@ class PlayerModel{
     bool? isCheating,
     bool? isOnVote,
     bool? haveLastWord,
+    bool? isVoting,
+    bool? isMafiaVoter
   }){
     return PlayerModel(
       user: user ?? this.user,
@@ -63,6 +73,8 @@ class PlayerModel{
       isCheating: isCheating ?? this.isCheating,
       isOnVote: isOnVote ?? this.isOnVote,
       haveLastWord: haveLastWord ?? this.haveLastWord,
+      isVoting: isVoting ?? this.isVoting,
+      isMafiaVoter: isMafiaVoter ?? this.isMafiaVoter,
     );
   }
   

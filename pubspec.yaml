@@ -31,6 +31,7 @@ dependencies:
   shared_preferences: ^2.0.13
   fluttertoast: ^8.0.9
   flutter_svg: ^1.0.3
+  circular_countdown_timer: ^0.2.1
 
 dev_dependencies:
   flutter_test:
