@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -554,7 +555,7 @@ class BottomNavBar extends StatelessWidget {
                                         )
                                       ) : SizedBox(
                                         width: 30,
-                                        child: SvgPicture.asset('icons/hat.svg', color: Colors.white, width: 30,)
+                                        child: SvgPicture.asset(kIsWeb ? 'icons/hat.svg' : 'assets/icons/hat.svg', color: Colors.white, width: 30,)
                                       ),
                                     ),
                                     Material(
@@ -944,7 +945,7 @@ class BottomNavBar extends StatelessWidget {
                                                     child: Padding(
                                                       padding: const EdgeInsets.all(8.0),
                                                       child: SvgPicture.asset(
-                                                        'icons/crown.svg', 
+                                                        kIsWeb ? 'icons/crown.svg' : 'assets/icons/crown.svg', 
                                                         color: Colors.grey,
                                                         width: 25,
                                                       ),
@@ -963,7 +964,7 @@ class BottomNavBar extends StatelessWidget {
                                                   child: Padding(
                                                     padding: const EdgeInsets.all(8.0),
                                                     child: SvgPicture.asset(
-                                                      'icons/crown.svg', 
+                                                      kIsWeb ? 'icons/crown.svg' : 'assets/icons/crown.svg',
                                                       color: const Color.fromARGB(255, 240, 216, 5),
                                                       width: 25,
                                                     ),

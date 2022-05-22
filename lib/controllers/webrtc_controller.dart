@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get/get.dart';
@@ -75,6 +76,7 @@ class WebRTCController extends GetxController{
         _forceLeaveRoom(Map<String, dynamic>.from(data));
       });
     }
+
     localClient = SocketService().socket.id!;    
 
     super.onInit();
@@ -129,10 +131,15 @@ class WebRTCController extends GetxController{
     update();
   }
 
-  Future<Uint8List> _getFrameByteData() async{
+  Future<void> getFrameByteData() async{
     var track = webrtcClients[localClient]!.videoRenderer!.srcObject!.getVideoTracks()[0];
     var byteBuffer = await track.captureFrame();
-    return byteBuffer.asUint8List();
+    print(byteBuffer.asUint8List().length);
+    SocketService().socket.emit('send-frame', {
+      'frame': byteBuffer.asUint8List(),
+      'user_id': authController.user.value.id,
+      'room': room
+    });
   }
 
 
@@ -216,9 +223,9 @@ class WebRTCController extends GetxController{
     webrtcClients[name]?.connection?.onAddStream = (MediaStream stream) {
       
       webrtcClients[name]!.videoRenderer = webrtc.RTCVideoRenderer();
-      webrtcClients[name]!.videoRenderer!.initialize();
+      
       webrtcClients[name]!.videoRenderer!.srcObject = stream;
-
+      webrtcClients[name]!.videoRenderer!.initialize();
       webrtcClients[name]!.isReadyToDisplay.value = true;
       
       webrtcClients.refresh();
@@ -354,8 +361,8 @@ class WebRTCController extends GetxController{
       webrtcClients[peer]?.connection?.close();
       webrtcClients[peer]?.connection = null;
       
-      webrtcClients[peer]!.videoRenderer!.srcObject!.getTracks().forEach((track){track.stop();});
-      webrtcClients[peer]!.videoRenderer!.srcObject!.dispose(); 
+      webrtcClients[peer]!.videoRenderer!.srcObject?.getTracks().forEach((track){track.stop();});
+      webrtcClients[peer]!.videoRenderer!.srcObject?.dispose(); 
       webrtcClients[peer]!.videoRenderer!.dispose();
       webrtcClients[peer]!.videoRenderer = null;
     

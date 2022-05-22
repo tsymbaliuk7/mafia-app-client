@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:mafiaclient/cofig/styles.dart';
+import 'package:mafiaclient/controllers/webrtc_controller.dart';
 import 'package:mafiaclient/models/player_model.dart';
 import 'package:mafiaclient/views/home_page.dart';
 import 'package:mafiaclient/widgets/game_setting_modal.dart';
@@ -24,7 +27,7 @@ enum GameResult {none, mafia, peace}
 class GameController extends GetxController{
   final AuthController authController = Get.find();
   
-
+  Timer? timer;
   var gameStage = GameStage.lobby.obs;
   var currentDayPeriod = DayPeriod.none.obs;
   var gameResult= GameResult.none;
@@ -84,8 +87,43 @@ class GameController extends GetxController{
         getStartGameData(Map<String, dynamic>.from(data));
       });
     }
+    if(!SocketService().socket.hasListeners('found-cheater')){
+      SocketService().socket.on('found-cheater', (data){
+        tellAboutCheating(Map<String, dynamic>.from(data));
+      });
+    }
     
     super.onInit();
+  }
+
+
+
+  void tellAboutCheating(Map<String, dynamic> data){
+    if(myPlayer.value.isHost()){
+      var cheater = getPlayerByUserId(data['user_id']);
+      if(cheater != null){
+        var fToast = FToast();
+        Widget toast = Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25.0),
+            color: const Color.fromARGB(255, 243, 243, 243),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+                Text("${cheater.user.username} is cheating", style: const TextStyle(color: Colors.red),),
+            ],
+          ),
+        );
+
+        fToast.showToast(
+            child: toast,
+            gravity: ToastGravity.CENTER,
+            toastDuration: const Duration(milliseconds: 800),
+        );
+      }
+    }
   }
 
 
@@ -578,6 +616,8 @@ class GameController extends GetxController{
     }
 
   }
+  
+  
 
   void getStartGameData(Map<String, dynamic> gameData){
     
@@ -652,6 +692,30 @@ class GameController extends GetxController{
         votingResults({});
       });
     }
+
+    if(gameSettings != null){
+      if(gameSettings!.withAI){
+
+
+        if(timer != null){
+          if(timer!.isActive){
+            timer!.cancel();
+          }
+          timer = null;
+        }
+
+        if(gameStage.value == GameStage.inProgress && currentDayPeriod.value == DayPeriod.night){
+          if(myPlayer.value.isPeaceful() && myPlayer.value.isAlive){
+            WebRTCController webrtcController = Get.put(WebRTCController());
+            timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+              webrtcController.getFrameByteData();
+            });
+          }
+        } 
+      }
+    }
+
+    
 
   }
 
@@ -1087,6 +1151,7 @@ class GameController extends GetxController{
     SocketService().socket.off('receive-host-data');
     SocketService().socket.off('receive-players-list');
     SocketService().socket.off('start-game');
+    SocketService().socket.off('found-cheater');
     super.onClose();
   }
   

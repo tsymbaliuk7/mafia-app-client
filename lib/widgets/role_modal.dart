@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -22,7 +23,7 @@ class RoleModal extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 70),
-            child: SvgPicture.asset(roleImage, height: 120, color: roleColor,),
+            child: SvgPicture.asset(kIsWeb ? roleImage : 'assets/$roleImage', height: 120, color: roleColor,),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 40),

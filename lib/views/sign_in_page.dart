@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -53,7 +54,7 @@ class _SignInPageState extends State<SignInPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SvgPicture.asset(
-                'icons/logo_${widget.styles.styleKey.value}.svg',
+                kIsWeb ? 'icons/logo_${widget.styles.styleKey.value}.svg' : 'assets/icons/logo_${widget.styles.styleKey.value}.svg',
                 height: 100,
               ),
               Container(

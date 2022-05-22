@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -56,7 +57,7 @@ class HomePage extends StatelessWidget {
                               SizedBox(
                                 height: MediaQuery.of(context).size.height / 2,
                                 child: SvgPicture.asset(
-                                  'icons/logo_${styles.styleKey.value}.svg',
+                                  kIsWeb ? 'icons/logo_${styles.styleKey.value}.svg' : 'assets/icons/logo_${styles.styleKey.value}.svg',
                                   height: MediaQuery.of(context).size.height / 2,
                                 ),
                               ),

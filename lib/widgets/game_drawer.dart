@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -55,7 +56,7 @@ class GameDrawer extends StatelessWidget {
                                 Padding(
                                   padding: const EdgeInsets.only(left: 5),
                                   child: SvgPicture.asset(
-                                    'icons/crown.svg', 
+                                    kIsWeb ? 'icons/crown.svg' : 'assets/icons/crown.svg',
                                     color: const Color.fromARGB(255, 240, 216, 5),
                                     width: 10,
                                   ),
@@ -92,7 +93,7 @@ class GameDrawer extends StatelessWidget {
                                     Padding(
                                       padding: const EdgeInsets.only(left: 5),
                                       child: SvgPicture.asset(
-                                        'icons/hat.svg', 
+                                        kIsWeb ? 'icons/hat.svg' : 'assets/icons/hat.svg', 
                                         color: const Color.fromARGB(255, 39, 0, 78),
                                         width: 10,
                                       ),
@@ -133,7 +134,7 @@ class GameDrawer extends StatelessWidget {
                                     Padding(
                                       padding: const EdgeInsets.only(left: 5),
                                       child: SvgPicture.asset(
-                                        'icons/tie.svg', 
+                                        kIsWeb ? 'icons/tie.svg' : 'assets/icons/tie.svg',
                                         color: Colors.black,
                                         width: 5,
                                       ),
@@ -174,7 +175,7 @@ class GameDrawer extends StatelessWidget {
                                     Padding(
                                       padding: const EdgeInsets.only(left: 5),
                                       child: SvgPicture.asset(
-                                        'icons/peace.svg', 
+                                        kIsWeb ? 'icons/peace.svg' : 'assets/icons/peace.svg', 
                                         color: const Color.fromARGB(255, 220, 29, 15),
                                         width: 10,
                                       ),
@@ -216,7 +217,7 @@ class GameDrawer extends StatelessWidget {
                                     Padding(
                                       padding: const EdgeInsets.only(left: 5),
                                       child: SvgPicture.asset(
-                                        'icons/player.svg', 
+                                        kIsWeb ? 'icons/player.svg' : 'assets/icons/player.svg', 
                                         color: const Color.fromARGB(255, 15, 59, 220),
                                         width: 10,
                                       ),
