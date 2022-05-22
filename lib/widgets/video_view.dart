@@ -30,7 +30,7 @@ class VideoView extends StatelessWidget {
               color: playerModel.isHost() ?const Color.fromARGB(255, 244, 212, 30).withOpacity(0.25) :Colors.black.withOpacity(0.25),
               borderRadius: BorderRadius.circular(25),
               border: playerModel.isSpeakingTurn 
-                ? Border.all(color: gradientColors[0], width: 2) 
+                ? Border.all(color: mainColors['day']!, width: 2) 
                 : playerModel.haveLastWord 
                   ? Border.all(color: Colors.black, width: 2) 
                   : null,
@@ -128,9 +128,9 @@ class VideoView extends StatelessWidget {
             child: Container(
               width: 40,
               height: 40,
-              decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 218, 0, 242),
-                borderRadius: BorderRadius.all(Radius.circular(40)),
+              decoration: BoxDecoration(
+                color: mainColors[game.getCurrentStyleName()],
+                borderRadius: const BorderRadius.all(Radius.circular(40)),
               ),
               child: Center(
                 child: Text(

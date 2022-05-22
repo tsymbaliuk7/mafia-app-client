@@ -63,6 +63,11 @@ flutter:
     - assets/icons/peace.svg
     - assets/icons/player.svg
     - assets/icons/shuffle.svg
+    - assets/icons/logo_night.svg
+    - assets/icons/logo_evening.svg
+    - assets/icons/logo_morning.svg
+    - assets/icons/logo_day.svg
+    
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

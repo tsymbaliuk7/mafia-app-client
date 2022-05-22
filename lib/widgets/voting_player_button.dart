@@ -4,10 +4,12 @@ class VotingPlayerButton extends StatelessWidget {
   const VotingPlayerButton({Key? key, 
     required this.orderId, 
     required this.onTap,
+    this.color
   }) : super(key: key);
 
   final int orderId;
   final void Function()? onTap;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +19,7 @@ class VotingPlayerButton extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color:const Color.fromARGB(255, 218, 0, 242),
+            color: color ?? const Color.fromARGB(255, 218, 0, 242),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(

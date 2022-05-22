@@ -1,6 +1,7 @@
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/cofig/styles.dart';
 import 'package:mafiaclient/controllers/game_controller.dart';
 import 'package:mafiaclient/widgets/voting_player_button.dart';
 
@@ -48,27 +49,31 @@ class _VotingWidgetState extends State<VotingWidget> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 2),
                     child: !widget.game.myPlayer.value.isHost() ? VotingPlayerButton(
+                      color: mainColors[widget.game.getCurrentStyleName()],
                       orderId: player!.keys.first, 
                       onTap: (){
                         widget.game.voteFor(id: player.values.first.user.id);   
                     }) : const SizedBox(),
                   );
                 }),
-                CircularCountDownTimer(
-                  width: 40,
-                  height: 40,
-                  initialDuration: 0,
-                  duration: widget.game.myPlayer.value.isHost() ? 15 : 10,
-                  controller: _controller,
-                  isTimerTextShown: false,
-                  isReverse: true,
-                  isReverseAnimation: true,
-                  autoStart: true,
-                  fillColor: const Color.fromARGB(255, 218, 0, 242),
-                  ringColor: Colors.white,
-                  onComplete: (){
-                    widget.game.voteFor();
-                  },
+                Padding(
+                  padding: const EdgeInsets.only(left: 5),
+                  child: CircularCountDownTimer(
+                    width: 40,
+                    height: 40,
+                    initialDuration: 0,
+                    duration: widget.game.myPlayer.value.isHost() ? 15 : 10,
+                    controller: _controller,
+                    isTimerTextShown: false,
+                    isReverse: true,
+                    isReverseAnimation: true,
+                    autoStart: true,
+                    fillColor: mainColors[widget.game.getCurrentStyleName()]!,
+                    ringColor: Colors.white,
+                    onComplete: (){
+                      widget.game.voteFor();
+                    },
+                  ),
                 )
               ],
             ) : const SizedBox(),

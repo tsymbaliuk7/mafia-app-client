@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mafiaclient/cofig/styles.dart';
+import 'package:mafiaclient/controllers/styles_controller.dart';
 import 'package:mafiaclient/views/room.dart';
 import 'package:uuid/uuid.dart';
 
@@ -21,6 +22,7 @@ class RoomsController extends GetxController{
   var roomStatus = Status.initial.obs;
   var joinStatus = Status.initial.obs;
   final AuthController authController = Get.find();
+  final StylesController styles = Get.find();
 
 
   @override
@@ -61,18 +63,18 @@ class RoomsController extends GetxController{
       Get.defaultDialog(
         title: "Error",
         backgroundColor: Colors.white,
-        titleStyle: TextStyle(color: gradientColors[0], fontSize: 18, fontWeight: FontWeight.w600),
+        titleStyle: TextStyle(color: mainColors[styles.styleKey.value], fontSize: 18, fontWeight: FontWeight.w600),
         middleTextStyle: const TextStyle(color: Colors.black),
         textConfirm: "OK",
         confirmTextColor: Colors.white,
-        buttonColor: gradientColors[0],
+        buttonColor: mainColors[styles.styleKey.value],
         barrierDismissible: true,
         onConfirm: (){
           Get.back();
           errorMessage = '';
           joinStatus.value = Status.success;
         },
-        radius: 50,
+        radius: 5,
         content: Text(errorMessage)
       );
     }
@@ -82,14 +84,14 @@ class RoomsController extends GetxController{
     Get.defaultDialog(
         title: "Already in room!",
         backgroundColor: Colors.white,
-        titleStyle: TextStyle(color: gradientColors[0], fontSize: 18, fontWeight: FontWeight.w600),
+        titleStyle: TextStyle(color: mainColors[styles.styleKey.value], fontSize: 18, fontWeight: FontWeight.w600),
         middleTextStyle: const TextStyle(color: Colors.black),
         textConfirm: "Rejoin",
         textCancel: "Continue",
         confirmTextColor: Colors.white,
-        buttonColor: gradientColors[0],
+        buttonColor: mainColors[styles.styleKey.value],
         barrierDismissible: true,
-        cancelTextColor: gradientColors[0],
+        cancelTextColor: mainColors[styles.styleKey.value],
         onConfirm: (){
           SocketService().socket.emit('force-leave-request', {
             'room': data['current_room'],
@@ -106,7 +108,7 @@ class RoomsController extends GetxController{
           });
           Get.offAll(() => RoomPage(id: data['is_creating'] ? const Uuid().v4().split('-')[0] : data['room']));
         },
-        radius: 50,
+        radius: 5,
         content: Text('It seems that ${authController.user.value.username} is already in room.\nWould you like to reconnect to that room or continue with the new one?')
       );
   }

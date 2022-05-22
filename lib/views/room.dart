@@ -146,8 +146,8 @@ _showToast() {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: const BorderRadius.only(
-                                bottomLeft: Radius.circular(10),
-                                bottomRight: Radius.circular(10)
+                                bottomLeft: Radius.circular(5),
+                                bottomRight: Radius.circular(5)
                               ),
                               boxShadow: [
                                 BoxShadow(
@@ -172,6 +172,7 @@ _showToast() {
                                     ? widget.webrtcController.room 
                                     : widget.game.gameStage.value == GameStage.over ? 'Game Over'
                                       : '${widget.game.isNight() ? 'Night' : 'Day'} ${widget.game.gameCycleCount}',
+                                    style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black87.withOpacity(0.8))
                                   ),
                                 )
                               ),

@@ -23,6 +23,7 @@ enum GameResult {none, mafia, peace}
 
 class GameController extends GetxController{
   final AuthController authController = Get.find();
+  
 
   var gameStage = GameStage.lobby.obs;
   var currentDayPeriod = DayPeriod.none.obs;
@@ -640,10 +641,10 @@ class GameController extends GetxController{
         title: 'Voting results',
         backgroundColor: Colors.white,
         barrierDismissible: true,
-        titleStyle: const TextStyle(
+        titleStyle: TextStyle(
           fontSize: 25,
           fontWeight: FontWeight.w600,
-          color: Color.fromARGB(255, 218, 0, 242) 
+          color: mainColors[getCurrentStyleName()],
         ),
         radius: 25,
         content: VotingsResultModal()
@@ -664,9 +665,9 @@ class GameController extends GetxController{
     Get.defaultDialog(
       title: "Game Settings",
       backgroundColor: Colors.white,
-      titleStyle: TextStyle(color: gradientColors[0], fontSize: 18, fontWeight: FontWeight.w600),
+      titleStyle: TextStyle(color: mainColors[getCurrentStyleName()], fontSize: 18, fontWeight: FontWeight.w600),
       confirmTextColor: Colors.white,
-      buttonColor: gradientColors[0],
+      buttonColor: mainColors[getCurrentStyleName()],
       barrierDismissible: true,
       radius: 25,
       content: GameSettingsModal(room: room!,)
@@ -1007,10 +1008,10 @@ class GameController extends GetxController{
         title: 'Voting results',
         backgroundColor: Colors.white,
         barrierDismissible: true,
-        titleStyle: const TextStyle(
+        titleStyle: TextStyle(
           fontSize: 25,
           fontWeight: FontWeight.w600,
-          color: Color.fromARGB(255, 218, 0, 242) 
+          color: mainColors[getCurrentStyleName()]
         ),
         radius: 25,
         content: VotingsResultModal()

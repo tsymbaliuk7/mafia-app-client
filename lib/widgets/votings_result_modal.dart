@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/cofig/styles.dart';
 import 'package:mafiaclient/controllers/game_controller.dart';
 
 class VotingsResultModal extends StatelessWidget {
@@ -26,7 +27,7 @@ class VotingsResultModal extends StatelessWidget {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color:const Color.fromARGB(255, 218, 0, 242),
+                      color: mainColors[game.getCurrentStyleName()],
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -62,7 +63,7 @@ class VotingsResultModal extends StatelessWidget {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color:const Color.fromARGB(255, 218, 0, 242).withOpacity(0.5),
+                      color:mainColors[game.getCurrentStyleName()]!.withOpacity(0.5),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(

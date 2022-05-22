@@ -25,7 +25,10 @@ class PlayerListItem extends StatelessWidget {
           decoration: const BoxDecoration(
             border: Border(bottom: BorderSide(color: Colors.grey))
           ),
-          child: Text('$order. ${player.user.username} ${isYou ? '(you)' : ''}'),
+          child: Text(
+            '$order. ${player.user.username} ${isYou ? '(you)' : ''}',
+            style: TextStyle(decoration: player.isAlive ? null : TextDecoration.lineThrough),
+          ),
         ),
         Container(
           width: 10,

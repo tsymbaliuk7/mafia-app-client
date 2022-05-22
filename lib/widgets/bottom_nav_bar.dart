@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/cofig/styles.dart';
 import 'package:mafiaclient/controllers/game_controller.dart' as g;
 import 'package:mafiaclient/views/home_page.dart';
 import 'package:mafiaclient/widgets/voting_player_button.dart';
@@ -94,7 +95,7 @@ class BottomNavBar extends StatelessWidget {
                                     decoration: BoxDecoration(
                                       color: playerCount < game.minPlayerNuber 
                                         ? const Color.fromARGB(255, 191, 191, 191) 
-                                        :const Color.fromARGB(255, 218, 0, 242),
+                                        : mainColors[game.getCurrentStyleName()],
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(
@@ -182,7 +183,7 @@ class BottomNavBar extends StatelessWidget {
                                     width: 50,
                                     height: 50,
                                     decoration: BoxDecoration(
-                                      color:const Color.fromARGB(255, 218, 0, 242),
+                                      color:mainColors[game.getCurrentStyleName()],
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(
@@ -275,7 +276,7 @@ class BottomNavBar extends StatelessWidget {
                                     width: 50,
                                     height: 50,
                                     decoration: BoxDecoration(
-                                      color:const Color.fromARGB(255, 218, 0, 242),
+                                      color: mainColors[game.getCurrentStyleName()],
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(
@@ -315,7 +316,7 @@ class BottomNavBar extends StatelessWidget {
                                   width: 50,
                                   height: 50,
                                   decoration: BoxDecoration(
-                                    color:const Color.fromARGB(255, 218, 0, 242),
+                                    color:mainColors[game.getCurrentStyleName()],
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
@@ -357,7 +358,7 @@ class BottomNavBar extends StatelessWidget {
                                   width: 50,
                                   height: 50,
                                   decoration: BoxDecoration(
-                                    color:const Color.fromARGB(255, 218, 0, 242),
+                                    color:mainColors[game.getCurrentStyleName()],
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
@@ -406,7 +407,7 @@ class BottomNavBar extends StatelessWidget {
                                   width: 50,
                                   height: 50,
                                   decoration: BoxDecoration(
-                                    color:const Color.fromARGB(255, 218, 0, 242),
+                                    color:mainColors[game.getCurrentStyleName()],
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
@@ -444,7 +445,7 @@ class BottomNavBar extends StatelessWidget {
                                   width: 50,
                                   height: 50,
                                   decoration: BoxDecoration(
-                                    color:const Color.fromARGB(255, 218, 0, 242),
+                                    color:mainColors[game.getCurrentStyleName()],
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
@@ -536,7 +537,7 @@ class BottomNavBar extends StatelessWidget {
                                       width: 50,
                                       height: 50,
                                       decoration: BoxDecoration(
-                                        color:const Color.fromARGB(255, 218, 0, 242),
+                                        color:mainColors[game.getCurrentStyleName()],
                                         shape: BoxShape.circle,
                                         boxShadow: [
                                           BoxShadow(
@@ -624,6 +625,7 @@ class BottomNavBar extends StatelessWidget {
                           ...alivePlayers.entries.map((e) => Padding(
                             padding: const EdgeInsets.only(right: 2),
                             child: VotingPlayerButton(
+                              color: mainColors[game.getCurrentStyleName()],
                               orderId: e.key, 
                               onTap: (){
                                 game.kill(id: e.value.user.id);    
@@ -666,6 +668,7 @@ class BottomNavBar extends StatelessWidget {
                             ...playersNotInVote.entries.map((e) => Padding(
                               padding: const EdgeInsets.only(right: 2),
                               child: VotingPlayerButton(
+                                color: mainColors[game.getCurrentStyleName()],
                                 orderId: e.key, 
                                 onTap: (){
                                   game.setOnVote(id: e.value.user.id);    
@@ -677,7 +680,7 @@ class BottomNavBar extends StatelessWidget {
                                   width: 40,
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    color:const Color.fromARGB(255, 218, 0, 242),
+                                    color:mainColors[game.getCurrentStyleName()],
                                     shape: BoxShape.circle,
                                     boxShadow: [
                                       BoxShadow(
@@ -755,7 +758,7 @@ class BottomNavBar extends StatelessWidget {
                                     width: 50,
                                     height: 50,
                                     decoration: BoxDecoration(
-                                      color:const Color.fromARGB(255, 218, 0, 242),
+                                      color:mainColors[game.getCurrentStyleName()],
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(

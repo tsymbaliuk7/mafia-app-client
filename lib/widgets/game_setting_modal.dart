@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/cofig/styles.dart';
 import 'package:mafiaclient/controllers/game_controller.dart';
 import 'package:mafiaclient/widgets/primary_buttons.dart';
 
@@ -37,21 +38,23 @@ class _GameSettingsModalState extends State<GameSettingsModal> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.only(bottom: 5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Use AI frames processing',
-                        style: TextStyle(
-                          fontSize: 20,
-                          
-                          fontWeight: FontWeight.bold,
+                      const Padding(
+                        padding: EdgeInsets.only(right: 10.0),
+                        child: Text(
+                          'Use AI frames processing',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       Switch(
                         value: useAI,
-                        activeColor: const Color(0xFF6957FE),
+                        activeColor: mainColors[widget.game.getCurrentStyleName()],
                         onChanged: (value) {
                           setState(() {
                             useAI = value;
@@ -62,7 +65,7 @@ class _GameSettingsModalState extends State<GameSettingsModal> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.only(bottom: 5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -76,7 +79,7 @@ class _GameSettingsModalState extends State<GameSettingsModal> {
                       ),
                       Switch(
                         value: lastWordForKilled,
-                        activeColor: const Color(0xFF6957FE),
+                        activeColor: mainColors[widget.game.getCurrentStyleName()],
                         onChanged: (value) {
                           setState(() {
                             lastWordForKilled = value;
@@ -87,7 +90,7 @@ class _GameSettingsModalState extends State<GameSettingsModal> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.only(bottom: 5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -141,17 +144,21 @@ class _GameSettingsModalState extends State<GameSettingsModal> {
                     ],
                   ),
                 ),
-                PrimaryButton(
-                  title: 'Start Game!',
-                  onTap: (){
-                    Get.back();
-                    widget.game.saveSettingAndStartGame(
-                      useAI, 
-                      lastWordForKilled, 
-                      mafiaCount
-                    );
-                  },
-                  buttonHeight: 56,
+                Padding(
+                  padding: const EdgeInsets.only(top: 15),
+                  child: PrimaryButton(
+                    title: 'Start Game!',
+                    color: mainColors[widget.game.getCurrentStyleName()],
+                    onTap: (){
+                      Get.back();
+                      widget.game.saveSettingAndStartGame(
+                        useAI, 
+                        lastWordForKilled, 
+                        mafiaCount
+                      );
+                    },
+                    buttonHeight: 45,
+                  ),
                 ),
               ],
             )

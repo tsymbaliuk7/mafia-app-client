@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:mafiaclient/cofig/styles.dart';
+import 'package:mafiaclient/controllers/styles_controller.dart';
 
 import '../controllers/auth_controller.dart';
 import '../controllers/rooms_controller.dart';
@@ -14,6 +17,7 @@ class AccountPage extends StatefulWidget {
   }) : super(key: key);
 
   final AuthController authController = Get.find();
+  final StylesController styles = Get.find();
 
   @override
   State<AccountPage> createState() => _AccountPageState();
@@ -41,20 +45,24 @@ class _AccountPageState extends State<AccountPage> {
         child: Stack(
           children: [
             Container(
-              color: const Color.fromARGB(255, 138, 189, 230),
+              color: backgroundColors[widget.styles.styleKey.value],
               width: MediaQuery.of(context).size.width,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  SvgPicture.asset(
+                    'icons/logo_${widget.styles.styleKey.value}.svg',
+                    height: 100,
+                  ),
                   Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.6),
-                      borderRadius: const BorderRadius.all(Radius.circular(25))
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(25))
                     ),
                     width: isMobile ? MediaQuery.of(context).size.width : 500,
                     padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 25),
-                    margin: EdgeInsets.symmetric(horizontal: isMobile ? 25 : 0),
+                    margin: EdgeInsets.only(top: 20, left: isMobile ? 25 : 0, right: isMobile ? 25 : 0),
                     child: Column(
                       children: [
                         const Padding(
@@ -106,7 +114,7 @@ class _AccountPageState extends State<AccountPage> {
                                     fillColor: const Color(0xffF2F3F2),
                                     contentPadding: const EdgeInsets.only(top: 30, left: 20, right: 20),
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15.0),
+                                      borderRadius: BorderRadius.circular(5.0),
                                       borderSide: const BorderSide(
                                         width: 0,
                                         style: BorderStyle.none,
@@ -129,21 +137,21 @@ class _AccountPageState extends State<AccountPage> {
                                 }
                               }),
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                padding: const EdgeInsets.only(bottom: 5),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Mute audio on connect',
                                       style: TextStyle(
                                         fontSize: 20,
-                                        color: Color(0xFF6957FE),
-                                        fontWeight: FontWeight.bold,
+                                        color: mainColors[widget.styles.styleKey.value],
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                     Switch(
                                       value: isMutedAudio,
-                                      activeColor: const Color(0xFF6957FE),
+                                      activeColor: mainColors[widget.styles.styleKey.value],
                                       onChanged: (value) {
                                         setState(() {
                                           isMutedAudio = value;
@@ -154,21 +162,21 @@ class _AccountPageState extends State<AccountPage> {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                padding: const EdgeInsets.only(bottom: 5),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Mute video on connect',
                                       style: TextStyle(
-                                        color: Color(0xFF6957FE),
+                                        color: mainColors[widget.styles.styleKey.value],
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     Switch(
                                       value: isMutedVideo,
-                                      activeColor: const Color(0xFF6957FE),
+                                      activeColor: mainColors[widget.styles.styleKey.value],
                                       onChanged: (value) {
                                         setState(() {
                                           isMutedVideo = value;
@@ -179,7 +187,7 @@ class _AccountPageState extends State<AccountPage> {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(top: 35, bottom: 25),
+                                padding: const EdgeInsets.only(top: 35, bottom: 10),
                                 child: PrimaryButton(
                                   buttonHeight: 42,
                                   title: 'confirm',
@@ -219,18 +227,18 @@ class _AccountPageState extends State<AccountPage> {
                   onTap: (){
                     Get.back();
                   },
-                  splashColor: const Color(0xFF6957FE).withOpacity(0.2),
+                  splashColor: mainColors[widget.styles.styleKey.value]!.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(40),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(40),
                     ),
                     padding: const EdgeInsets.all(10),
-                    child: const Icon(
+                    child: Icon(
                       Icons.arrow_back,
                       size: 25,
-                      color:Color(0xFF6957FE),
+                      color: mainColors[widget.styles.styleKey.value],
                     )
                   )
                 ),
