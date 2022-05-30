@@ -14,7 +14,7 @@ class ApiService{
 
   final Dio _api = Dio();
   String? token;
-  final String baseApiUrl = 'https://hidden-temple-69290.herokuapp.com/api/';
+  final String baseApiUrl = 'https://mafia-client.herokuapp.com/api/';
 
 
   Dio getApiWithOptions({bool withAuth = false}){

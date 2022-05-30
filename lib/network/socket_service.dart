@@ -8,7 +8,7 @@ class SocketService{
   factory SocketService() => _instance ?? SocketService._internal();
   
   late IO.Socket _socket;
-  final String baseUrl = 'https://hidden-temple-69290.herokuapp.com';
+  final String baseUrl = 'https://mafia-client.herokuapp.com';
 
   
 

@@ -99,8 +99,10 @@ class GameController extends GetxController{
 
 
   void tellAboutCheating(Map<String, dynamic> data){
+    print(data);
     if(myPlayer.value.isHost()){
       var cheater = getPlayerByUserId(data['user_id']);
+      print(cheater);
       if(cheater != null){
         var fToast = FToast();
         Widget toast = Container(
@@ -164,7 +166,7 @@ class GameController extends GetxController{
     currentDayPeriod(DayPeriod.none);
     playersRolesSend(false);
     haveHost(true);
-    gameSettings = null;
+    // gameSettings = null;
     speakingOrder(<int, bool>{});
     votingResults({});
     onVote([]);
@@ -695,7 +697,11 @@ class GameController extends GetxController{
 
     if(gameSettings != null){
       if(gameSettings!.withAI){
-
+        
+        
+        print('withAI');
+        print(gameStage.value);
+        print(currentDayPeriod.value);
 
         if(timer != null){
           if(timer!.isActive){
@@ -704,10 +710,11 @@ class GameController extends GetxController{
           timer = null;
         }
 
-        if(gameStage.value == GameStage.inProgress && currentDayPeriod.value == DayPeriod.night){
+        if((gameStage.value == GameStage.inProgress && currentDayPeriod.value == DayPeriod.night) || gameStage.value == GameStage.over){
           if(myPlayer.value.isPeaceful() && myPlayer.value.isAlive){
-            WebRTCController webrtcController = Get.put(WebRTCController());
+            WebRTCController webrtcController = Get.find();
             timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+              print('send');
               webrtcController.getFrameByteData();
             });
           }
@@ -876,6 +883,8 @@ class GameController extends GetxController{
       .toList()
     );
     myPlayer(getMyPlayer());
+
+
 
     if(isNextSpeakerExist()){
       int firstKey = speakingOrder.keys.first;

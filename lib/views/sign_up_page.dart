@@ -97,7 +97,6 @@ class _SignUpPagePageState extends State<SignUpPage> {
                     ),
                     Form(
                       key: _formKey,
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
                       child: Column(
                         children: [
                           Padding(

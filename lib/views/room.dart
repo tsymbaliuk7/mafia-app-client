@@ -57,8 +57,8 @@ _showToast() {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: const [
-            Text("Copied to clipboard"),
+        children: [
+            Text("Dima is cheating", style: const TextStyle(color: Colors.red),),
         ],
       ),
     );
